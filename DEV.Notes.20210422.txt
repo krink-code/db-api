@@ -60,3 +60,16 @@ reg_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ```
 
 
+https://github.com/o1lab/xmysql
+
+GET
+/api/tableName/:id Retrieves a row by primary key
+
+
+---
+
+https://medium.com/swlh/coding-a-rest-api-with-python-77384ad60511
+https://medium.com/daily-python/building-a-simple-rest-api-using-python-flask-daily-python-14-488d63701bd2
+https://medium.com/@sametgirgin/rest-api-crud-example-in-python-using-flask-and-mysql-8eea922d533e
+
+
