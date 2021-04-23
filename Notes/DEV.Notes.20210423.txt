@@ -38,3 +38,8 @@ https://flask-restful.readthedocs.io/en/latest/quickstart.html
 
 
 
+https://stackoverflow.com/questions/14993318/catching-a-500-server-error-in-flask
+
+
+
+
