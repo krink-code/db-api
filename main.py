@@ -16,6 +16,18 @@ def root():
 
 @app.route("/mysql/user", methods=['GET'])
 def mysql_user():
+
+    #/api/payments?_fields=customerNumber,checkNumber
+
+    #curl 'localhost:8980/mysql/user?skip=0&limit=2'
+    #curl 'localhost:8980/mysql/user?fields=user,host,plugin'
+
+    limit  = request.args.get("limit", None)
+    skip   = request.args.get("skip", None)
+    fields = request.args.get("fields", None)
+    #if limit:
+    #    print(limit)
+
     conn = mysql.connect()
     #cur = conn.cursor(buffered=True)
     cur = conn.cursor()
