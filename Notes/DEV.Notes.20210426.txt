@@ -1,0 +1,5 @@
+
+if you get rid of 'from flaskext.mysql import MySQL' and use libmysql c client (import mysql.connector)
+then you can also get rid of 'import cryptography' and is faster performance
+
+
