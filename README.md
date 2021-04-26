@@ -29,21 +29,29 @@ python3 main.py
 
 ### curl client examples
 
+#### get service
+```  
+curl 127.0.0.1:8980/
+```
 #### list all databases
 ```  
-curl --user dbuser:dbpass 127.0.0.1:8980/api
+curl --user dbuser:dbpass http://127.0.0.1:8980/api
 ```
 #### list all tables in the mysql database
 ```  
-curl --user dbuser:dbpass 127.0.0.1:8980/api/mysql
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql
 ```
 #### list all table fields in the user table
 ```  
-curl --user dbuser:dbpass 127.0.0.1:8980/api/mysql/user
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user
 ```
 #### query the mysql.user table fields=user,host,password and limit 3
 ```  
-curl --user dbuser:dbpass "127.0.0.1:8980/api/mysql/user?fields=user,host,password&limit=3"
+curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host,password&limit=3"
+```
+#### query example database on different host and port (default is 127.0.0.1:3306)
+```  
+curl --user dbuser:dbpass -H "X-Host: 127.0.1.1" -H "X-Port: 3307" "http://127.0.0.1:8980/api/example/table?fields=field1,field2,field3"
 ```
 
 
