@@ -14,4 +14,85 @@ mydb = mysql.connector.connect(
 print(mydb) 
 ```
 
+#-----
+
+
+caveat,
+
+some data does not jsonify properly...
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi "127.0.0.1:8980/api/mysql/user?q=y"
+{"errorMessage":"Object of type Decimal is not JSON serializable","errorType":"Internal Server Error","status":500}
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi "127.0.0.1:8980/api/mysql/user?fields=max_statement_time"
+{"errorMessage":"Object of type Decimal is not JSON serializable","errorType":"Internal Server Error","status":500}
+
+```
+mysql> show fields from mysql.user;
++------------------------+---------------------+------+-----+----------+-------+
+| Field                  | Type                | Null | Key | Default  | Extra |
++------------------------+---------------------+------+-----+----------+-------+
+| Host                   | char(60)            | NO   |     |          |       |
+| User                   | char(80)            | NO   |     |          |       |
+| Password               | longtext            | YES  |     | NULL     |       |
+| Select_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Insert_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Update_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Delete_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Create_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Drop_priv              | varchar(1)          | YES  |     | NULL     |       |
+| Reload_priv            | varchar(1)          | YES  |     | NULL     |       |
+| Shutdown_priv          | varchar(1)          | YES  |     | NULL     |       |
+| Process_priv           | varchar(1)          | YES  |     | NULL     |       |
+| File_priv              | varchar(1)          | YES  |     | NULL     |       |
+| Grant_priv             | varchar(1)          | YES  |     | NULL     |       |
+| References_priv        | varchar(1)          | YES  |     | NULL     |       |
+| Index_priv             | varchar(1)          | YES  |     | NULL     |       |
+| Alter_priv             | varchar(1)          | YES  |     | NULL     |       |
+| Show_db_priv           | varchar(1)          | YES  |     | NULL     |       |
+| Super_priv             | varchar(1)          | YES  |     | NULL     |       |
+| Create_tmp_table_priv  | varchar(1)          | YES  |     | NULL     |       |
+| Lock_tables_priv       | varchar(1)          | YES  |     | NULL     |       |
+| Execute_priv           | varchar(1)          | YES  |     | NULL     |       |
+| Repl_slave_priv        | varchar(1)          | YES  |     | NULL     |       |
+| Repl_client_priv       | varchar(1)          | YES  |     | NULL     |       |
+| Create_view_priv       | varchar(1)          | YES  |     | NULL     |       |
+| Show_view_priv         | varchar(1)          | YES  |     | NULL     |       |
+| Create_routine_priv    | varchar(1)          | YES  |     | NULL     |       |
+| Alter_routine_priv     | varchar(1)          | YES  |     | NULL     |       |
+| Create_user_priv       | varchar(1)          | YES  |     | NULL     |       |
+| Event_priv             | varchar(1)          | YES  |     | NULL     |       |
+| Trigger_priv           | varchar(1)          | YES  |     | NULL     |       |
+| Create_tablespace_priv | varchar(1)          | YES  |     | NULL     |       |
+| Delete_history_priv    | varchar(1)          | YES  |     | NULL     |       |
+| ssl_type               | varchar(9)          | YES  |     | NULL     |       |
+| ssl_cipher             | longtext            | NO   |     |          |       |
+| x509_issuer            | longtext            | NO   |     |          |       |
+| x509_subject           | longtext            | NO   |     |          |       |
+| max_questions          | bigint(20) unsigned | NO   |     | 0        |       |
+| max_updates            | bigint(20) unsigned | NO   |     | 0        |       |
+| max_connections        | bigint(20) unsigned | NO   |     | 0        |       |
+| max_user_connections   | bigint(21)          | NO   |     | 0        |       |
+| plugin                 | longtext            | NO   |     |          |       |
+| authentication_string  | longtext            | NO   |     |          |       |
+| password_expired       | varchar(1)          | NO   |     |          |       |
+| is_role                | varchar(1)          | YES  |     | NULL     |       |
+| default_role           | longtext            | NO   |     |          |       |
+| max_statement_time     | decimal(12,6)       | NO   |     | 0.000000 |       |
++------------------------+---------------------+------+-----+----------+-------+
+47 rows in set (0.00 sec)
+
+mysql>
+```
+
+```
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "127.0.0.1:8980/api/mysql/user"                     
+[["Host","char(60)","NO","","",""],["User","char(80)","NO","","",""],["Password","longtext","YES","",null,""],["Select_priv","varchar(1)","YES","",null,""],["Insert_priv","varchar(1)","YES","",null,""],["Update_priv","varchar(1)","YES","",null,""],["Delete_priv","varchar(1)","YES","",null,""],["Create_priv","varchar(1)","YES","",null,""],["Drop_priv","varchar(1)","YES","",null,""],["Reload_priv","varchar(1)","YES","",null,""],["Shutdown_priv","varchar(1)","YES","",null,""],["Process_priv","varchar(1)","YES","",null,""],["File_priv","varchar(1)","YES","",null,""],["Grant_priv","varchar(1)","YES","",null,""],["References_priv","varchar(1)","YES","",null,""],["Index_priv","varchar(1)","YES","",null,""],["Alter_priv","varchar(1)","YES","",null,""],["Show_db_priv","varchar(1)","YES","",null,""],["Super_priv","varchar(1)","YES","",null,""],["Create_tmp_table_priv","varchar(1)","YES","",null,""],["Lock_tables_priv","varchar(1)","YES","",null,""],["Execute_priv","varchar(1)","YES","",null,""],["Repl_slave_priv","varchar(1)","YES","",null,""],["Repl_client_priv","varchar(1)","YES","",null,""],["Create_view_priv","varchar(1)","YES","",null,""],["Show_view_priv","varchar(1)","YES","",null,""],["Create_routine_priv","varchar(1)","YES","",null,""],["Alter_routine_priv","varchar(1)","YES","",null,""],["Create_user_priv","varchar(1)","YES","",null,""],["Event_priv","varchar(1)","YES","",null,""],["Trigger_priv","varchar(1)","YES","",null,""],["Create_tablespace_priv","varchar(1)","YES","",null,""],["Delete_history_priv","varchar(1)","YES","",null,""],["ssl_type","varchar(9)","YES","",null,""],["ssl_cipher","longtext","NO","","",""],["x509_issuer","longtext","NO","","",""],["x509_subject","longtext","NO","","",""],["max_questions","bigint(20) unsigned","NO","","0",""],["max_updates","bigint(20) unsigned","NO","","0",""],["max_connections","bigint(20) unsigned","NO","","0",""],["max_user_connections","bigint(21)","NO","","0",""],["plugin","longtext","NO","","",""],["authentication_string","longtext","NO","","",""],["password_expired","varchar(1)","NO","","",""],["is_role","varchar(1)","YES","",null,""],["default_role","longtext","NO","","",""],["max_statement_time","decimal(12,6)","NO","","0.000000",""]]
+🐰 karl.rink@Karl-MacBook-Pro ~ %
+```
+
+
+ 
+
+
 
