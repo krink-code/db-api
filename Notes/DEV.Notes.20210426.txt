@@ -92,7 +92,15 @@ mysql>
 ```
 
 
- 
+--- 
+
+
+Oh, good idea!  regarding cache (which i've been thinking about...)  &cache=10 
+which will cache the hit for 10 seconds.
+or 
+as a header perhaps,
+X-Cache: 10
+
 
 
 
