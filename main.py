@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210426-1ln'
+__version__='0.0.1.dev.20210427-1'
 
 from app import app
 from flask import request
@@ -9,8 +9,8 @@ from flask import jsonify
 from werkzeug.exceptions import HTTPException
 from db import mysql
 import cryptography
-
 from functools import wraps
+
 
 @app.route("/", methods=['GET'])
 def root():
@@ -60,7 +60,7 @@ def get_api(db=None, table=None):
 
 @app.errorhandler(404)
 def not_found(error=None):
-    message = { 'status': 404, 'message': 'Not Found: ' + request.url }
+    message = { 'status': 404, 'errorType': 'Not Found: ' + request.url }
     return jsonify(message), 404
 
 
@@ -76,15 +76,10 @@ def handle_exception(e):
 def Auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        username = request.authorization.username
-        password = request.authorization.password
-        dbhost   = request.headers.get('X-Host', '127.0.0.1')
-        dbport   = request.headers.get('X-Port', '3306')
-
-        app.config['MYSQL_DATABASE_USER'] = username
-        app.config['MYSQL_DATABASE_PASSWORD'] = password
-        app.config['MYSQL_DATABASE_HOST'] = dbhost
-        app.config['MYSQL_DATABASE_PORT'] = int(dbport)
+        app.config['MYSQL_DATABASE_USER'] = request.authorization.username
+        app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
+        app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
+        app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
         return f(*args, **kwargs)
     return decorated
 
@@ -98,6 +93,18 @@ def fetchall(sql):
     cur.close()
     conn.close()
     return rows
+
+@Auth
+def fetchone(sql):
+    conn = mysql.connect()
+    cur = conn.cursor()
+    cur.execute(sql)
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    return row
+
+
 
 
 if __name__ == "__main__":
