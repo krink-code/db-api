@@ -13,5 +13,20 @@ fetchone is working now...
 ["69d0b32a-a780-11eb-9c94-acde48001122"]
 ```
 
+# DEV.NOTE
+# big time name space collision using 'id' and/or '_id'
+#{"errorMessage":"get_one() got an unexpected keyword argument 'id'","errorType":"Internal Server Error","status":500}
+#@app.route("/api/<db>/<table>/<id>", methods=['GET'])
+#    assert _id == request.view_args['id']
+
+used:
+#@app.route("/api/<db>/<table>/<int:id>", methods=['GET'])
+@app.route("/api/<db>/<table>/<key>", methods=['GET'])
+def get_one(db=None, table=None, key=None):
+    assert key == request.view_args['key']
+
+
+
+
 
 

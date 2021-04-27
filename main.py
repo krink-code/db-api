@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210427-2'
+__version__='0.0.1.dev.20210427-3'
 
 from app import app
 from flask import request
@@ -12,11 +12,13 @@ import cryptography
 from functools import wraps
 
 
+#GET    /                             # Show status
 @app.route("/", methods=['GET'])
 def root():
     return jsonify(status=200, message="OK", version=__version__), 200
 
 
+#GET    /api                          # Show databases
 @app.route("/api", methods=['GET'])
 def show_databases():
     SQL = 'SHOW DATABASES'
@@ -24,6 +26,7 @@ def show_databases():
     return jsonify(rows), 200
 
 
+#GET    /api/<db>                     # Show database tables
 @app.route("/api/<db>", methods=['GET'])
 def show_tables(db=None):
     assert db == request.view_args['db']
@@ -32,6 +35,8 @@ def show_tables(db=None):
     return jsonify(rows), 200
 
 
+#GET    /api/<db>/<table>             # Show database table fields
+#GET    /api/<db>/<table>?query=true  # List rows of table
 @app.route("/api/<db>/<table>", methods=['GET'])
 def get_many(db=None, table=None):
 
@@ -39,15 +44,14 @@ def get_many(db=None, table=None):
     assert table == request.view_args['table']
 
     fields = request.args.get("fields", None)
+    if not fields:
+        fields = '*'
     limit  = request.args.get("limit", None)
 
     if not request.query_string:
         SQL = 'SHOW FIELDS FROM ' + str(db) +'.'+ str(table)
         rows = fetchall(SQL)
         return jsonify(rows), 200
-
-    if not fields:
-        fields = '*'
 
     SQL = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table) 
 
@@ -57,8 +61,8 @@ def get_many(db=None, table=None):
     rows = fetchall(SQL)
     return jsonify(rows), 200
 
-# GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
-#@app.route("/api/<db>/<table>/<int:id>", methods=['GET'])
+
+#GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
 @app.route("/api/<db>/<table>/<key>", methods=['GET'])
 def get_one(db=None, table=None, key=None):
 
@@ -70,20 +74,23 @@ def get_one(db=None, table=None, key=None):
     if not fields:
         fields = '*'
 
-    #SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='"+str(_id)+"'"
-    #SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='2'"
-    #print(SQL)
-
     SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='"+str(key)+"'"
-
     row = fetchone(SQL)
     return jsonify(row), 200
 
-# DEV.NOTE
-# big time name space collision using 'id' and/or '_id'
-#{"errorMessage":"get_one() got an unexpected keyword argument 'id'","errorType":"Internal Server Error","status":500}
-#@app.route("/api/<db>/<table>/<id>", methods=['GET'])
-#    assert _id == request.view_args['id']
+#POST   /api/<db>/<table>             # Create a new row
+@app.route("/api/<db>/<table>", methods=['POST'])
+def post_insert(db=None, table=None):
+
+    assert db == request.view_args['db']
+    assert table == request.view_args['table']
+
+    #... 
+
+    #return jsonify({'status': 201, 'message':'Created'}), 201
+    return jsonify(status=201, message="Created"), 201
+
+
 
 
 
