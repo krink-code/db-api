@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210427-1'
+__version__='0.0.1.dev.20210427-2'
 
 from app import app
 from flask import request
@@ -33,7 +33,7 @@ def show_tables(db=None):
 
 
 @app.route("/api/<db>/<table>", methods=['GET'])
-def get_api(db=None, table=None):
+def get_many(db=None, table=None):
 
     assert db == request.view_args['db']
     assert table == request.view_args['table']
@@ -56,6 +56,35 @@ def get_api(db=None, table=None):
 
     rows = fetchall(SQL)
     return jsonify(rows), 200
+
+# GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
+#@app.route("/api/<db>/<table>/<int:id>", methods=['GET'])
+@app.route("/api/<db>/<table>/<key>", methods=['GET'])
+def get_one(db=None, table=None, key=None):
+
+    assert db == request.view_args['db']
+    assert table == request.view_args['table']
+    assert key == request.view_args['key']
+
+    fields = request.args.get("fields", None)
+    if not fields:
+        fields = '*'
+
+    #SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='"+str(_id)+"'"
+    #SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='2'"
+    #print(SQL)
+
+    SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='"+str(key)+"'"
+
+    row = fetchone(SQL)
+    return jsonify(row), 200
+
+# DEV.NOTE
+# big time name space collision using 'id' and/or '_id'
+#{"errorMessage":"get_one() got an unexpected keyword argument 'id'","errorType":"Internal Server Error","status":500}
+#@app.route("/api/<db>/<table>/<id>", methods=['GET'])
+#    assert _id == request.view_args['id']
+
 
 
 @app.errorhandler(404)

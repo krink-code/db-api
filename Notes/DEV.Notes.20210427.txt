@@ -1,0 +1,17 @@
+
+
+fetchone is working now...
+
+```
+🐰 karl.rink@Karl-MacBook-Pro python % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1/2"
+[2,"69d0b32a-a780-11eb-9c94-acde48001122",null,"Tue, 27 Apr 2021 10:45:53 GMT"]
+🐰 karl.rink@Karl-MacBook-Pro python % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1"          
+[["id","int(11)","NO","PRI",null,"auto_increment"],["name","varchar(255)","NO","",null,""],["description","text","YES","",null,""],["created_at","timestamp","NO","","current_timestamp()",""]]
+🐰 karl.rink@Karl-MacBook-Pro python % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1/2"
+[2,"69d0b32a-a780-11eb-9c94-acde48001122",null,"Tue, 27 Apr 2021 10:45:53 GMT"]
+🐰 karl.rink@Karl-MacBook-Pro python % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1/2?fields=name"
+["69d0b32a-a780-11eb-9c94-acde48001122"]
+```
+
+
+
