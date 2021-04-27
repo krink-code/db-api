@@ -27,6 +27,66 @@ def get_one(db=None, table=None, key=None):
 
 
 
+#---
+
+flask mysql insert.
+
+- don't forget about mysql auto_increment colmn
+- mysql can insert omitting the colmns.  INSERT INTO tbl_name () VALUES(); 
+  cursor.execute("INSERT INTO db.table VALUES (%s)", ["foo"])
+
+
+insert into test (age,name) values(%s,%s)
+looks like:
+record = [12, 'Tom']
+cursor.execute("insert into test (age,name) values(%s,%s)", record)
+
+ah, return last row inserted 
+last_id = cursor.lastrowid
+and/or
+
+
+
+https://dev.mysql.com/doc/refman/8.0/en/insert.html
+
+
+return error if not db.commit()
+
+def insert(mysql, insertCmd):
+     try:
+        cursor = mysql.connect().cursor()
+        cursor.execute(insertCmd)
+        mysql.connect().commit()
+        return True
+     except Exception as e:
+        print("Problem inserting into db: " + str(e))
+        return False
+
+https://stackoverflow.com/questions/46997265/how-to-make-this-flask-mysql-insert-commit
+So, you have to do the following (no shortcuts):
+connection = mysql.connect()
+cursor = connection.cursor()
+cursor.execute(insertCmd)
+connection.commit()
+
+typically...
+cur.execute(
+    """INSERT INTO 
+        login (
+            fname,
+            lname,
+            username,
+            password,
+            email,
+            question,
+            answer)
+    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""", (fname, lname, username, password, cpassword, email, selection, answer))
+db.commit()
+    print "Registered"
+
+
+
+
 
 
 
