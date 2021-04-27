@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210427-3'
+__version__='0.0.1.dev.20210427-4'
 
 from app import app
 from flask import request
@@ -85,7 +85,114 @@ def post_insert(db=None, table=None):
     assert db == request.view_args['db']
     assert table == request.view_args['table']
 
+    app.config['MYSQL_DATABASE_USER'] = request.authorization.username
+    app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
+    app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
+    app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
+
+
+
+    #post = request.get_json()
+    #post = request.get_json
+    #print(post)
+    #postdata = request.json
+    #print(postdata)
     #... 
+    #for k,v in post:
+    #    print(k)
+    #    print(v)
+
+    if not request.headers['Content-Type'] == 'application/json':
+        return jsonify(status=412, errorType="Precondition Failed"), 412
+
+    post = request.get_json()
+
+    #Keys=[]
+    #Vals=[]
+    #for key in post:
+    #    #print(key)
+    #    #print(post[key])
+    #    Keys.append(key)
+    #    Vals.append(post[key])
+ 
+#    print(str(Keys)) 
+#    print(str(Vals)) 
+#
+#    KeysToStr = ",".join([str(elem) for elem in Keys])
+#    ValsToStr = "".join([str(elem) for elem in ])
+#    print(listToStr)
+
+    #SQL = "INSERT INTO "+str(db)+"."+str(table) +" ("+str(fields)+")"
+
+    #fields = ",".join([str(key) for key in post])
+    #print(fields)
+    #print(len(post))
+
+    #import json
+    #data = json.loads(post)
+    #data = json.dumps(post)
+
+    #SQL = "INSERT INTO "+str(db)+"."+str(table) +" VALUES( %s )"
+    #values = (data,)
+    #print(str(data))
+
+    #data_values  = post
+    print(str(type(post)))
+    print(len(post))
+
+    placeholders = ['%s'] * len(post)
+
+    fields = ",".join([str(key) for key in post])
+    places = ",".join([str(key) for key in placeholders])
+
+    print(fields)
+    print(places)
+
+    #sql_template = """ INSERT INTO example.table1 ({columns}) VALUES ({placeholders}) """
+    #SQL = sql_template.format(
+    #    columns=','.join([str(key) for key in post]),
+    #    placeholders=','.join(placeholders)
+    #)
+
+    #cur = db.cursor()
+    #cur.execute(sql, data_values)
+
+    #records=[]
+    #for key in post:
+    #    records.append(post[key])
+
+
+    #SQL = "INSERT INTO "+str(db)+"."+str(table) +" VALUES( %s )"
+
+    #records = ['Tom', 'A description']
+    #SQL = "INSERT INTO " +str(db)+"."+str(table)+" (name,description) VALUES (%s,%s)"
+
+
+    #records = ['Jane', 'Another description']
+    records=[]
+    for key in post:
+        records.append(post[key])
+    SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+
+    print(SQL)
+
+
+    conn = mysql.connect()
+    cur = conn.cursor()
+    cur.execute(SQL, records)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+    #conn = mysql.connect()
+    #cur = conn.cursor()
+    #cur.execute(SQL, values)
+    #conn.commit()
+    #cur.close()
+    #conn.close()
+
+
 
     #return jsonify({'status': 201, 'message':'Created'}), 201
     return jsonify(status=201, message="Created"), 201
