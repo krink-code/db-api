@@ -1,12 +1,13 @@
 
 # python3
 
-__version__='0.0.1.dev.20210428-1'
+__version__='0.0.1.dev.20210428-2'
 
 from app import app
 from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import Unauthorized
 from db import mysql
 import cryptography
 from functools import wraps
@@ -82,6 +83,40 @@ def get_one(db=None, table=None, key=None):
         return jsonify(row), 200
 
 
+##POST   /api/<db>/<table>             # Create a new row
+#@app.route("/api/<db>/<table>", methods=['POST'])
+#def post_insert(db=None, table=None):
+#
+#    assert db == request.view_args['db']
+#    assert table == request.view_args['table']
+#
+#    if not request.headers['Content-Type'] == 'application/json':
+#        return jsonify(status=412, errorType="Precondition Failed"), 412
+#
+#    post = request.get_json()
+#
+#    placeholders = ['%s'] * len(post)
+#    fields = ",".join([str(key) for key in post])
+#    places = ",".join([str(key) for key in placeholders])
+#
+#    values=[]
+#    for key in post:
+#        values.append(post[key])
+#
+#    SQL = "INSERT INTO "+str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+#    print(SQL)
+#
+#    insert = insertsql(SQL, values)
+#    return jsonify(status=201, message="Created"), 201
+#
+#    #if insert is True:
+#    #    return jsonify(status=201, message="Created"), 201
+#    #else:
+#    #    return jsonify(status=461, message="Failed Create"), 461
+
+
+# this works...
+
 #POST   /api/<db>/<table>             # Create a new row
 @app.route("/api/<db>/<table>", methods=['POST'])
 def post_insert(db=None, table=None):
@@ -89,27 +124,50 @@ def post_insert(db=None, table=None):
     assert db == request.view_args['db']
     assert table == request.view_args['table']
 
+    app.config['MYSQL_DATABASE_USER'] = request.authorization.username
+    app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
+    app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
+    app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
+
+
     if not request.headers['Content-Type'] == 'application/json':
         return jsonify(status=412, errorType="Precondition Failed"), 412
 
     post = request.get_json()
 
+    print(str(type(post)))
+    print(len(post))
+
     placeholders = ['%s'] * len(post)
+
     fields = ",".join([str(key) for key in post])
     places = ",".join([str(key) for key in placeholders])
 
-    values=[]
+    print(fields)
+    print(places)
+
+
+    #records = ['Jane', 'Another description']
+    records=[]
     for key in post:
-        values.append(post[key])
+        records.append(post[key])
+    SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
-    SQL = "INSERT INTO "+str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+    print(SQL)
 
-    insert = insertone(SQL, values)
 
-    if insert is True:
-        return jsonify(status=201, message="Created"), 201
-    else:
-        return jsonify(status=461, message="Failed Create"), 461
+    conn = mysql.connect()
+    cur = conn.cursor()
+    cur.execute(SQL, records)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return jsonify(status=201, message="Created"), 201
+
+
+
+
 
 
 #DELETE /api/<db>/<table>/:id         # Delete a row by primary key
@@ -129,6 +187,91 @@ def delete_one(db=None, table=None, key=None):
     else:
         return jsonify(status=466, message="Failed Delete"), 466
 
+#multi-valued key1=val1,key2=val2,etc update
+##PATCH  /api/<db>/<table>/:id         # Update row element by primary key
+#@app.route("/api/<db>/<table>/<key>", methods=['PATCH'])
+#def patch_one(db=None, table=None, key=None):
+#
+#    assert db == request.view_args['db']
+#    assert table == request.view_args['table']
+#    assert key == request.view_args['key']
+#
+#    if not request.headers['Content-Type'] == 'application/json':
+#        return jsonify(status=412, errorType="Precondition Failed"), 412
+#
+#    post = request.get_json()
+#
+#    colmns=[]
+#    values=[]
+#    for _key in post:
+#        colmns.append(_key+'=?')
+#        values.append(post[_key])
+#
+#    fields = ",".join([str(k) for k in colmns])
+#
+#    SQL = "UPDATE "+str(db)+"."+str(table)+" SET "+str(fields)+" WHERE id='"+str(key)+"'"
+#    print(SQL)
+#
+#    update = insertsql(SQL, values)
+#
+#    if update is True:
+#        #return jsonify(status=204, message="No Content"), 204
+#        return jsonify(status=201, message="Created", update="Success"), 201
+#    else:
+#        return jsonify(status=465, message="Failed Update"), 465
+
+#cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+#UPDATE table_name 
+#SET column1=value1,column2=value2 
+#WHERE condition; 
+
+
+#PATCH  /api/<db>/<table>/:id         # Update row element by primary key (single key/val)
+@app.route("/api/<db>/<table>/<key>", methods=['PATCH'])
+def patch_one(db=None, table=None, key=None):
+
+    assert db == request.view_args['db']
+    assert table == request.view_args['table']
+    assert key == request.view_args['key']
+
+    if not request.headers['Content-Type'] == 'application/json':
+        return jsonify(status=412, errorType="Precondition Failed"), 412
+
+    post = request.get_json()
+
+    if len(post) > 1:
+        return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only"), 405
+
+    #colmns=[]
+    values=[]
+    for _key in post:
+        field = _key
+        values.append(post[_key])
+    #    colmns.append(_key+'=?')
+    #fields = ",".join([str(k) for k in colmns])
+
+    SQL = "UPDATE "+str(db)+"."+str(table)+" SET "+str(field)+"=? WHERE id='"+str(key)+"'"
+    print(SQL)
+    print(values)
+
+    update = insertsql(SQL, values)
+    #update = True
+
+
+    if update is True:
+        #return jsonify(status=204, message="No Content"), 204
+        return jsonify(status=201, message="Created", update="Success"), 201
+    else:
+        return jsonify(status=465, message="Failed Update"), 465
+
+
+
+
+
+#PUT    /api/<db>/<table>             # Replaces existing row with new row
+#cur.execute("REPLACE INTO nmap VALUES(?, DATETIME('now'), ?)", (ip, data))
+
+
 
 
 
@@ -140,33 +283,35 @@ def not_found(error=None):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+
+    print(str(type(e)))
+    print(str(e))
+
     if isinstance(e, HTTPException):
-        return e
+        return jsonify(status=e.code, errorType="HTTP Exception", errorMessage=str(e)), e.code
+
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(e)
     return jsonify(res), 500
 
-#@app.errorhandler(Exception)
-#def handle_auth_error(e):
-#    res = {'errorType': 'Internal Server Error'}
-#    res.status_code = (e.code if isinstance(e, HTTPException) else 500)
-#    res['status'] = res.status_code
-#    return jsonify(res), response.status_code
 
 
 
-def Auth(f):
+def Conf(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         app.config['MYSQL_DATABASE_USER'] = request.authorization.username
         app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
         app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
         app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
-        return f(*args, **kwargs)
+        #if not request.authorization:
+        #    print('no request.authorization')
+        #    return jsonify(status=401,errorType="Unauthorized",errorMessage="Requires BasicAuth"), 401
+        #return f(*args, **kwargs)
     return decorated
 
 
-@Auth
+@Conf
 def fetchall(sql):
     conn = mysql.connect()
     cur = conn.cursor()
@@ -176,7 +321,7 @@ def fetchall(sql):
     conn.close()
     return rows
 
-@Auth
+@Conf
 def fetchone(sql):
     conn = mysql.connect()
     cur = conn.cursor()
@@ -186,20 +331,21 @@ def fetchone(sql):
     conn.close()
     return row
 
-@Auth
-def insertone(sql, values):
+@Conf
+def insertsql(sql, values):
     conn = mysql.connect()
     cur = conn.cursor()
     cur.execute(sql, values)
     conn.commit()
     cur.close()
     conn.close()
-    if cur.rowcount == 0:
-        return False
-    else:
-        return True
+    #if cur.rowcount == 0:
+    #    return False
+    #else:
+    #    return True
+    return True
 
-@Auth
+@Conf
 def commitsql(sql):
     conn = mysql.connect()
     cur = conn.cursor()

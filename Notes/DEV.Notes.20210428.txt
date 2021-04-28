@@ -5,5 +5,46 @@ app default port is tcp 8980
 
 history of 8980...  why/where did i get this number?.  basically, after testing maxscale i had thier 8989 port in my brain.  MaxScale REST API listens on port 8989.  so, since http is default plain text on tcp 80, i figured i'd keep in mind its all plain text here at 8980.
 
+---
+
+https://en.wikipedia.org/wiki/Patch_verb
+
+
+```
+curl -X PATCH  \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json"  \
+     -d "{\"Id\": 78912,\"Customer\": \"Krink\",\"Quantity\": 1,\"Price\": 99.00}" \
+    https://127.0.0.1:8980/api/example/table1/3
+```
+
+ugh.  i hate PATCH return 204 No Content 
+
+when i set return to 
+return jsonify(status=204, message="No Content"), 204
+ the body response is not actually returned to the client, only the headers...
+i like the response body to have a message/success/ or something more than just headers...
+look; i understand we're following a standard here... 
+- The response 204 means that the request was processed successfully
+- when a 204 response code is used, the response does not carry a payload body.  
+
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH
+
+https://en.wikipedia.org/wiki/HTTP_ETag
+
+
+---
+
+
+ok, another thing... it's kinda like tabs vrs spaces ( i like spaces )
+camelCase in json keys?.... i recall a string.to_lower in the past...
+the standards say...
+https://www.json.org/json-en.html
+https://tools.ietf.org/html/rfc7159
+
+https://google.github.io/styleguide/jsoncstyleguide.xml
+https://stackoverflow.com/questions/5543490/json-naming-convention-snake-case-camelcase-or-pascalcase
+
+
 
 
