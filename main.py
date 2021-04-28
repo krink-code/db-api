@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210427-6'
+__version__='0.0.1.dev.20210427-7'
 
 from app import app
 from flask import request
@@ -105,7 +105,25 @@ def post_insert(db=None, table=None):
     if insert is True:
         return jsonify(status=201, message="Created"), 201
     else:
-        return jsonify(status=466, message="Failed Create"), 466
+        return jsonify(status=461, message="Failed Create"), 461
+
+#DELETE /api/<db>/<table>/:id         # Delete a row by primary key
+@app.route("/api/<db>/<table>/<key>", methods=['DELETE'])
+def delete_one(db=None, table=None, key=None):
+
+    assert db == request.view_args['db']
+    assert table == request.view_args['table']
+    assert key == request.view_args['key']
+
+    #...
+
+    delete = True
+
+    if delete is True:
+        return jsonify(status=211, message="Deleted"), 211
+    else:
+        return jsonify(status=466, message="Failed Delete"), 466
+
 
 
 
@@ -122,6 +140,14 @@ def handle_exception(e):
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(e)
     return jsonify(res), 500
+
+#@app.errorhandler(Exception)
+#def handle_auth_error(e):
+#    res = {'errorType': 'Internal Server Error'}
+#    res.status_code = (e.code if isinstance(e, HTTPException) else 500)
+#    res['status'] = res.status_code
+#    return jsonify(res), response.status_code
+
 
 
 def Auth(f):

@@ -89,4 +89,28 @@ db.commit()
 
 
 
+---
+
+
+@app.errorhandler(AuthError)
+def handle_auth_error(ex):
+    response = jsonify(error=str(ex))
+    response.status_code = (ex.code if isinstance(ex, HTTPException) else 500)
+    app.logger.error('error AuthError ' + str(ex))
+    return response
+
+@app.errorhandler(500)
+def server_error(e):
+    #logging.exception('An error occurred during a request.')
+    app.logger.error('error 500 ' + str(e))
+    return """
+    An internal error occurred: <pre>{}</pre>
+    See logs for full stacktrace.
+    """.format(e), 500
+
+
+
+
+
+
 
