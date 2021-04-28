@@ -1,0 +1,9 @@
+
+8980
+
+app default port is tcp 8980
+
+history of 8980...  why/where did i get this number?.  basically, after testing maxscale i had thier 8989 port in my brain.  MaxScale REST API listens on port 8989.  so, since http is default plain text on tcp 80, i figured i'd keep in mind its all plain text here at 8980.
+
+
+

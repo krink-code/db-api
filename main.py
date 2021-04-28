@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210427-7'
+__version__='0.0.1.dev.20210428-1'
 
 from app import app
 from flask import request
@@ -43,23 +43,23 @@ def get_many(db=None, table=None):
     assert db == request.view_args['db']
     assert table == request.view_args['table']
 
-    fields = request.args.get("fields", None)
-    if not fields:
-        fields = '*'
+    fields = request.args.get("fields", '*')
     limit  = request.args.get("limit", None)
 
     if not request.query_string:
         SQL = 'SHOW FIELDS FROM ' + str(db) +'.'+ str(table)
-        rows = fetchall(SQL)
-        return jsonify(rows), 200
-
-    SQL = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table) 
+    else:
+        SQL = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table) 
 
     if limit:
         SQL += ' LIMIT ' + str(limit)
 
     rows = fetchall(SQL)
-    return jsonify(rows), 200
+
+    if rows is None:
+        return jsonify(status=404, message="Not Found"), 404
+    else:
+        return jsonify(rows), 200
 
 
 #GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
@@ -70,13 +70,17 @@ def get_one(db=None, table=None, key=None):
     assert table == request.view_args['table']
     assert key == request.view_args['key']
 
-    fields = request.args.get("fields", None)
-    if not fields:
-        fields = '*'
+    fields = request.args.get("fields", '*')
 
     SQL = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE id='"+str(key)+"'"
+
     row = fetchone(SQL)
-    return jsonify(row), 200
+
+    if row is None:
+        return jsonify(status=404, message="Not Found"), 404
+    else:
+        return jsonify(row), 200
+
 
 #POST   /api/<db>/<table>             # Create a new row
 @app.route("/api/<db>/<table>", methods=['POST'])
@@ -98,7 +102,7 @@ def post_insert(db=None, table=None):
     for key in post:
         values.append(post[key])
 
-    SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+    SQL = "INSERT INTO "+str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
     insert = insertone(SQL, values)
 
@@ -106,6 +110,7 @@ def post_insert(db=None, table=None):
         return jsonify(status=201, message="Created"), 201
     else:
         return jsonify(status=461, message="Failed Create"), 461
+
 
 #DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 @app.route("/api/<db>/<table>/<key>", methods=['DELETE'])
@@ -115,9 +120,9 @@ def delete_one(db=None, table=None, key=None):
     assert table == request.view_args['table']
     assert key == request.view_args['key']
 
-    #...
-
-    delete = True
+    SQL = "DELETE FROM "+str(db)+"."+str(table)+" WHERE id='"+str(key)+"'"
+     
+    delete = commitsql(SQL)
 
     if delete is True:
         return jsonify(status=211, message="Deleted"), 211
@@ -189,7 +194,25 @@ def insertone(sql, values):
     conn.commit()
     cur.close()
     conn.close()
-    return True
+    if cur.rowcount == 0:
+        return False
+    else:
+        return True
+
+@Auth
+def commitsql(sql):
+    conn = mysql.connect()
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    cur.close()
+    conn.close()
+    if cur.rowcount == 0:
+        return False
+    else:
+        return True
+
+
 
 
 
