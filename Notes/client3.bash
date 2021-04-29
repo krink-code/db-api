@@ -6,11 +6,12 @@ curl --user dbuser:dbpass \
      -X PATCH  \
      -H "Content-Type: application/json" \
      -H "Accept: application/json"  \
-     -d '{"name": "Krink","description": "A PATCH update"}' \
+     -d '{"description": "A single colmn update"}' \
     http://127.0.0.1:8980/api/example/table1/11
 
      #-d '{"name": "Krink","description": "A PATCH update"}' \
      #-d '{"description": "A PATCH update2"}' \
+     #-d '{"name": "Krink","description": "A PATCH update"}' \
 
      #if description is already "A PATCH update"... 465
 

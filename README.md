@@ -12,7 +12,7 @@ GET    /api/<db>/<table>             # Show database table fields
 
 GET    /api/<db>/<table>?query=true  # List rows of table
 POST   /api/<db>/<table>             # Create a new row
-PUT    /api/<db>/<table>             # Replaces existing row with new row
+PUT    /api/<db>/<table>             # Replace existing row with new row
 
 GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
 PATCH  /api/<db>/<table>/:id         # Update row element by primary key
@@ -47,7 +47,7 @@ curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user
 ```
 #### query the mysql.user table fields=user,host,password and limit 3
 ```  
-curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host,password&limit=3"
+curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host&limit=2,3"
 ```
 #### query example database on different host and port (default is 127.0.0.1:3306)
 ```  

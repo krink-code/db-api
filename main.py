@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210429-2'
+__version__='1.0.0'
 
 from app import app
 from flask import request
@@ -56,10 +56,10 @@ def get_many(db=None, table=None):
 
     rows = fetchall(SQL)
 
-    if rows is None:
-        return jsonify(status=404, message="Not Found"), 404
-    else:
+    if rows:
         return jsonify(rows), 200
+    else:
+        return jsonify(status=404, message="Not Found"), 404
 
 
 #GET    /api/<db>/<table>/:id         # Retrieve a row by primary key
@@ -78,10 +78,10 @@ def get_one(db=None, table=None, key=None):
 
     row = fetchone(SQL)
 
-    if row is None:
-        return jsonify(status=404, message="Not Found"), 404
-    else:
+    if row:
         return jsonify(row), 200
+    else:
+        return jsonify(status=404, message="Not Found"), 404
 
 
 #POST   /api/<db>/<table>             # Create a new row
@@ -110,10 +110,10 @@ def post_insert(db=None, table=None):
 
     insert = sqlexec(SQL, records)
 
-    if insert == 1:
-        return jsonify(status=201, message="Created"), 201
+    if insert > 0:
+        return jsonify(status=201, message="Created", insert=True), 201
     else:
-        return jsonify(status=461, message="Failed Create"), 461
+        return jsonify(status=461, message="Failed Create", insert=False), 461
 
 
 #DELETE /api/<db>/<table>/:id         # Delete a row by primary key
@@ -131,10 +131,10 @@ def delete_one(db=None, table=None, key=None):
 
     delete = sqlcommit(SQL)
 
-    if delete == 1:
-        return jsonify(status=211, message="Deleted"), 211
+    if delete > 0:
+        return jsonify(status=211, message="Deleted", delete=True), 211
     else:
-        return jsonify(status=466, message="Failed Delete"), 466
+        return jsonify(status=466, message="Failed Delete", delete=False), 466
 
 
 #PATCH  /api/<db>/<table>/:id         # Update row element by primary key (single key/val)
@@ -154,7 +154,7 @@ def patch_one(db=None, table=None, key=None):
     post = request.get_json()
 
     if len(post) > 1:
-        return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only"), 405
+        return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only", update=False), 405
 
     for _key in post:
         field = _key
@@ -164,17 +164,43 @@ def patch_one(db=None, table=None, key=None):
 
     update = sqlcommit(SQL)
 
-    if update == 1:
+    if update > 0:
         #return jsonify(status=204, message="No Content"), 204
         return jsonify(status=201, message="Created", update=True), 201
     else:
         return jsonify(status=465, message="Failed Update", update=False), 465
 
 
-#PUT    /api/<db>/<table>             # Replaces existing row with new row
-#cur.execute("REPLACE INTO nmap VALUES(?, DATETIME('now'), ?)", (ip, data))
+#PUT    /api/<db>/<table>             # Replace existing row with new row
+#                                     # key1=val1,key2=val2
+@app.route("/api/<db>/<table>", methods=['PUT'])
+def put_replace(db=None, table=None):
 
+    assert db == request.view_args['db']
+    assert table == request.view_args['table']
 
+    if not request.headers['Content-Type'] == 'application/json':
+        return jsonify(status=412, errorType="Precondition Failed"), 412
+
+    post = request.get_json()
+
+    placeholders = ['%s'] * len(post)
+
+    fields = ",".join([str(key) for key in post])
+    places = ",".join([str(key) for key in placeholders])
+
+    records=[]
+    for key in post:
+        records.append(post[key])
+
+    SQL = "REPLACE INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+
+    replace = sqlexec(SQL, records)
+
+    if replace > 0:
+        return jsonify(status=201, message="Created", replace=True), 201
+    else:
+        return jsonify(status=461, message="Failed Create", replace=False), 461
 
 
 
