@@ -1,44 +1,18 @@
 
 # python3
 
-__version__='0.0.1.dev.20210428-4.mysql.connector.2'
+__version__='0.0.1.dev.20210428-4.mysql.connector.3'
 
 from app import app
 from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
-#from werkzeug.exceptions import Unauthorized
-#from db import mysql
-#import cryptography
 from functools import wraps
 
 import mysql.connector
 #https://github.com/mysql/mysql-connector-python
 #https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
 #pip3 install mysql-connector-python
-
-#config = {
-#    'user': request.authorization.username,
-#    'password': request.authorization.password,
-#    'database': '',
-#    'host': request.headers.get('X-Host', '127.0.0.1'),
-#    'port': int(request.headers.get('X-Port', '3306')),
-#    'raise_on_warnings': True,
-#    'auth_plugin': 'mysql_native_password',
-#}
-
-#def sqlConnection():
-#    config = {
-#        'user': request.authorization.username,
-#        'password': request.authorization.password,
-#        'host': request.headers.get('X-Host', '127.0.0.1'),
-#        'port': int(request.headers.get('X-Port', '3306')),
-#        'database': request.headers.get('X-Db', ''),
-##        'raise_on_warnings': request.headers.get('X-Warnings', True),
-#        'auth_plugin': request.headers.get('X-Auth-Plugin', 'mysql_native_password'),
-#    }
-#    db = mysql.connector.connect(**config)
-#    return db
 
 #GET    /                             # Show status
 @app.route("/", methods=['GET'])
@@ -51,7 +25,6 @@ def root():
 def show_databases():
     SQL = 'SHOW DATABASES'
     rows = fetchall(SQL)
-
     return jsonify(rows), 200
 
 
@@ -152,7 +125,6 @@ def post_insert(db=None, table=None):
     assert db == request.view_args['db']
     assert table == request.view_args['table']
 
-
     if not request.headers['Content-Type'] == 'application/json':
         return jsonify(status=412, errorType="Precondition Failed"), 412
 
@@ -177,26 +149,26 @@ def post_insert(db=None, table=None):
     SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
     #print(SQL)
+
     #insert = insertsql(SQL, records)
+    insert = sqlexec(SQL, records)
+
     #if insert == True:
 
-    app.config['MYSQL_DATABASE_USER'] = request.authorization.username
-    app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
-    app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
-    app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
 
-    conn = mysql.connect()
-    cur = conn.cursor()
-    cur.execute(SQL, records)
-    conn.commit()
-    cur.close()
-    conn.close()
+    #conn = mysql.connect()
+    #cur = conn.cursor()
+    #cur.execute(SQL, records)
+    #conn.commit()
+    #cur.close()
+    #conn.close()
     
 
-    if cur.rowcount == 0:
-        return jsonify(status=461, message="Failed Create"), 461
-    else:
+    #if cur.rowcount == 0:
+    if insert == True:
         return jsonify(status=201, message="Created"), 201
+    else:
+        return jsonify(status=461, message="Failed Create"), 461
 
 
 ##multi-valued key1=val1,key2=val2,etc update
@@ -256,13 +228,18 @@ def delete_one(db=None, table=None, key=None):
     assert key == request.view_args['key']
 
     SQL = "DELETE FROM "+str(db)+"."+str(table)+" WHERE id='"+str(key)+"'"
-     
-    delete = commitsql(SQL)
+    #delete = commitsql(SQL)
+    delete = sqlcommit(SQL)
 
-    if delete is True:
+    print(delete)
+
+    #if delete is True:
+    if delete == 1:
         return jsonify(status=211, message="Deleted"), 211
     else:
         return jsonify(status=466, message="Failed Delete"), 466
+
+    #https://www.w3schools.com/python/python_mysql_delete.asp
 
 #multi-valued key1=val1,key2=val2,etc update
 ##PATCH  /api/<db>/<table>/:id         # Update row element by primary key
@@ -377,24 +354,17 @@ def patch_one(db=None, table=None, key=None):
     #update = insertsql(SQL, values)
     #update = True
 
+    update = sqlcommit(SQL)
 
-    app.config['MYSQL_DATABASE_USER'] = request.authorization.username
-    app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
-    app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
-    app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
-
-    conn = mysql.connect()
-    cur = conn.cursor()
-    cur.execute(SQL)
+    #cur.execute(SQL)
     #cur.execute(SQL, records)
-    conn.commit()
-    cur.close()
-    conn.close()
 
-    if cur.rowcount == 0:
-        return jsonify(status=465, message="Failed Update"), 465
+    if update == 1:
+        #return jsonify(status=204, message="No Content"), 204
+        #return jsonify(status=201, message="Created", update="Success"), 201
+        return jsonify(status=201, message="Created", update=True), 201
     else:
-        return jsonify(status=201, message="Created", update="Success"), 201
+        return jsonify(status=465, message="Failed Update"), 465
     #hmmm.  this is 465 when success but nothing to update when column data and update are the same.
 
 
@@ -428,12 +398,28 @@ def handle_exception(e):
     if type(e).__name__ == 'OperationalError':
         return jsonify(status=512, errorType="OperationalError", errorMessage=str(e)), 512
 
+    if type(e).__name__ == 'InterfaceError':
+        return jsonify(status=512, errorType="InterfaceError", errorMessage=str(e)), 512
+
     if type(e).__name__ == 'ProgrammingError':
         return jsonify(status=512, errorType="ProgrammingError", errorMessage=str(e)), 512
 
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(e)
     return jsonify(res), 500
+
+
+#<class 'AttributeError'>
+#'NoneType' object has no attribute 'username'
+#AttributeError
+
+#<class 'mysql.connector.errors.InterfaceError'>
+#2003: Can't connect to MySQL server on '192.168.0.99:3306' (51 Network is unreachable)
+#InterfaceError
+
+#<class 'mysql.connector.errors.InterfaceError'>
+#2003: Can't connect to MySQL server on '127.0.0.1:3307' (61 Connection refused)
+#InterfaceError
 
 #<class 'pymysql.err.OperationalError'>
 #(1054, "Unknown column 'descriptionXXXXX' in 'field list'")
@@ -458,34 +444,37 @@ def fetchone(sql):
     cur.execute(sql)
     row = cur.fetchone()
     cur.close()
-    conn.close()
+    cnx.close()
     return row
 
-def insertsql(sql, values):
-    conn = mysql.connect()
-    cur = conn.cursor()
+def sqlexec(sql, values):
+    cnx = sqlConnection()
+    cur = cnx.cursor(buffered=True)
     cur.execute(sql, values)
-    conn.commit()
-    print(str(cur.rowcount))
-    if cur.rowcount == 0:
-        cur.close()
-        conn.close()
-        return False
+    cnx.commit()
+    rowcount = cur.rowcount
     cur.close()
-    conn.close()
-    return True
+    cnx.close()
+    #if cur.rowcount == 0:
+    #    return 0
+    #else:
+    #    return cur.rowcount
+    return rowcount
 
-def commitsql(sql):
-    conn = mysql.connect()
-    cur = conn.cursor()
+def sqlcommit(sql):
+    cnx = sqlConnection()
+    cur = cnx.cursor(buffered=True)
     cur.execute(sql)
-    conn.commit()
+    cnx.commit()
+    rowcount = cur.rowcount
     cur.close()
-    conn.close()
-    if cur.rowcount == 0:
-        return False
-    else:
-        return True
+    cnx.close()
+    #if cur.rowcount == 0:
+    #    return 0
+    #else:
+    #    return cur.rowcount
+    #return cur.rowcount
+    return rowcount
 
 def sqlConnection():
     config = {
@@ -496,10 +485,14 @@ def sqlConnection():
         'database': request.headers.get('X-Db', ''),
         'raise_on_warnings': request.headers.get('X-Warnings', True),
         'auth_plugin': request.headers.get('X-Auth-Plugin', 'mysql_native_password'),
+        'use_pure':request.headers.get('X-Pure', True),
     }
     db = mysql.connector.connect(**config)
     return db
 
+# Setting use_pure=False causes the connection to use the C Extension 
+# https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+# https://dev.mysql.com/doc/connector-python/en/connector-python-cext.html
 
 if __name__ == "__main__":
     app.run(port=8980, debug=False)
