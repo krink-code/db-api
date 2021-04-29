@@ -12,4 +12,129 @@ connection_timeout
 {"errorMessage":"2003: Can't connect to MySQL server on '192.168.0.1:3306' (timed out)","errorType":"InterfaceError","status":512}
 
 
+---
+
+configure mysql.connector via headers...
+X-Host: 127.0.0.1
+X-Port: 3306
+
+having fun trying to pass bool True|False to curl header -H "X-Pure: False"
+
+---
+
+import mysql.connector
+#https://github.com/mysql/mysql-connector-python
+#https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+#pip3 install mysql-connector-python
+
+---
+
+#<class 'AttributeError'>
+#'NoneType' object has no attribute 'username'
+#AttributeError
+
+#<class 'mysql.connector.errors.InterfaceError'>
+#2003: Can't connect to MySQL server on '192.168.0.99:3306' (51 Network is unreachable)
+#InterfaceError
+
+#<class 'mysql.connector.errors.InterfaceError'>
+#2003: Can't connect to MySQL server on '127.0.0.1:3307' (61 Connection refused)
+#InterfaceError
+
+#<class 'pymysql.err.OperationalError'>
+#(1054, "Unknown column 'descriptionXXXXX' in 'field list'")
+
+#new driver... mysql.connector (libmysql c client)
+#<class 'mysql.connector.errors.ProgrammingError'>
+#1045 (28000): Access denied for user 'dbuser'@'localhost' (using password: YES)
+
+
+---
+
+# Setting use_pure=False causes the connection to use the C Extension 
+# https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+# https://dev.mysql.com/doc/connector-python/en/connector-python-cext.html
+
+
+#https://www.w3schools.com/python/python_mysql_delete.asp
+
+
+
+---
+
+hmmm.  most api limit the return results to 10 or 100 or something...  rather than let the client pull massive rows if exist...
+
+🐰 karl.rink@Karl-MacBook-Pro db-api % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1?q=y"
+
+🐰 karl.rink@Karl-MacBook-Pro db-api % curl --user dbuser:dbpass "127.0.0.1:8980/api/example/table1?limit=2"
+
+
+#PATCH  /api/<db>/<table>/:id         # Update row element by primary key (single key/val)
+@app.route("/api/<db>/<table>/<key>", methods=['PATCH'])
+def patch_one(db=None, table=None, key=None):
+
+
+    if update == 1:
+        #return jsonify(status=204, message="No Content"), 204
+        return jsonify(status=201, message="Created", update=True), 201
+    else:
+        return jsonify(status=465, message="Failed Update", update=False), 465
+        #this is 465 when success but nothing to update when column data and update are the same.
+
+
+---
+
+
+revisit this later...
+
+#multi-valued key1=val1,key2=val2,etc update
+##PATCH  /api/<db>/<table>/:id         # Update row element by primary key
+#@app.route("/api/<db>/<table>/<key>", methods=['PATCH'])
+#def patch_one(db=None, table=None, key=None):
+#
+#    assert db == request.view_args['db']
+#    assert table == request.view_args['table']
+#    assert key == request.view_args['key']
+#
+#    if not request.headers['Content-Type'] == 'application/json':
+#        return jsonify(status=412, errorType="Precondition Failed"), 412
+#
+#    post = request.get_json()
+#
+#    colmns=[]
+#    values=[]
+#    for _key in post:
+#        colmns.append(_key+'=?')
+#        values.append(post[_key])
+#
+#    fields = ",".join([str(k) for k in colmns])
+#
+#    SQL = "UPDATE "+str(db)+"."+str(table)+" SET "+str(fields)+" WHERE id='"+str(key)+"'"
+#    print(SQL)
+#
+#    update = insertsql(SQL, values)
+#
+#    if update is True:
+#        #return jsonify(status=204, message="No Content"), 204
+#        return jsonify(status=201, message="Created", update="Success"), 201
+#    else:
+#        return jsonify(status=465, message="Failed Update"), 465
+
+#cur.execute("UPDATE arp SET data=? WHERE mac=?", (update, mac))
+#UPDATE table_name 
+#SET column1=value1,column2=value2 
+#WHERE condition; 
+
+
+https://en.wikipedia.org/wiki/Column
+
+
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT
+
+
+
+
+
+
+
 
