@@ -1,7 +1,7 @@
 
 # python3
 
-__version__='0.0.1.dev.20210428-4.mysql.connector.3'
+__version__='0.0.1.dev.20210429-1'
 
 from app import app
 from flask import request
@@ -84,40 +84,6 @@ def get_one(db=None, table=None, key=None):
         return jsonify(row), 200
 
 
-##POST   /api/<db>/<table>             # Create a new row
-#@app.route("/api/<db>/<table>", methods=['POST'])
-#def post_insert(db=None, table=None):
-#
-#    assert db == request.view_args['db']
-#    assert table == request.view_args['table']
-#
-#    if not request.headers['Content-Type'] == 'application/json':
-#        return jsonify(status=412, errorType="Precondition Failed"), 412
-#
-#    post = request.get_json()
-#
-#    placeholders = ['%s'] * len(post)
-#    fields = ",".join([str(key) for key in post])
-#    places = ",".join([str(key) for key in placeholders])
-#
-#    values=[]
-#    for key in post:
-#        values.append(post[key])
-#
-#    SQL = "INSERT INTO "+str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
-#    print(SQL)
-#
-#    insert = insertsql(SQL, values)
-#    return jsonify(status=201, message="Created"), 201
-#
-#    #if insert is True:
-#    #    return jsonify(status=201, message="Created"), 201
-#    #else:
-#    #    return jsonify(status=461, message="Failed Create"), 461
-
-
-# this works...
-
 #POST   /api/<db>/<table>             # Create a new row
 @app.route("/api/<db>/<table>", methods=['POST'])
 def post_insert(db=None, table=None):
@@ -130,42 +96,20 @@ def post_insert(db=None, table=None):
 
     post = request.get_json()
 
-    #print(str(type(post)))
-    #print(len(post))
-
     placeholders = ['%s'] * len(post)
 
     fields = ",".join([str(key) for key in post])
     places = ",".join([str(key) for key in placeholders])
 
-    #print(fields)
-    #print(places)
-
-    #records = ['Jane', 'Another description']
     records=[]
     for key in post:
         records.append(post[key])
 
     SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
-    #print(SQL)
-
-    #insert = insertsql(SQL, records)
     insert = sqlexec(SQL, records)
 
-    #if insert == True:
-
-
-    #conn = mysql.connect()
-    #cur = conn.cursor()
-    #cur.execute(SQL, records)
-    #conn.commit()
-    #cur.close()
-    #conn.close()
-    
-
-    #if cur.rowcount == 0:
-    if insert == True:
+    if insert == 1:
         return jsonify(status=201, message="Created"), 201
     else:
         return jsonify(status=461, message="Failed Create"), 461
@@ -478,14 +422,18 @@ def sqlcommit(sql):
 
 def sqlConnection():
     config = {
-        'user': request.authorization.username,
-        'password': request.authorization.password,
-        'host': request.headers.get('X-Host', '127.0.0.1'),
-        'port': int(request.headers.get('X-Port', '3306')),
-        'database': request.headers.get('X-Db', ''),
-        'raise_on_warnings': request.headers.get('X-Warnings', True),
-        'auth_plugin': request.headers.get('X-Auth-Plugin', 'mysql_native_password'),
-        'use_pure':request.headers.get('X-Pure', True),
+        'user':               request.authorization.username,
+        'password':           request.authorization.password,
+        'host':               request.headers.get('X-Host', '127.0.0.1'),
+        'port':               int(request.headers.get('X-Port', '3306')),
+        'database':           request.headers.get('X-Db', ''),
+        'raise_on_warnings':  request.headers.get('X-Raise-Warnings', True),
+        'get_warnings':       request.headers.get('X-Get-Warnings', True),
+        'auth_plugin':        request.headers.get('X-Auth-Plugin', 'mysql_native_password'),
+        'use_pure':           request.headers.get('X-Pure', True),
+        'use_unicode':        request.headers.get('X-Unicode', True),
+        'charset':            request.headers.get('X-Charset', 'utf8'),
+        'connection_timeout': int(request.headers.get('X-Connection-Timeout', 60)),
     }
     db = mysql.connector.connect(**config)
     return db

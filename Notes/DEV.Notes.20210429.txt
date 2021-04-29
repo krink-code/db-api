@@ -1,0 +1,15 @@
+
+https://dev.mysql.com/doc/connector-python/en/connector-python-connectargs.html
+
+---
+
+connection_timeout
+
+🐰 krink@KarlMBPro ~ % curl --user dbuser:dbpass -H "X-Host: 192.168.0.1" localhost:8980/api
+{"errorMessage":"2003: Can't connect to MySQL server on '192.168.0.1:3306' (60 Operation timed out)","errorType":"InterfaceError","status":512}
+
+🐰 krink@KarlMBPro ~ % curl --user dbuser:dbpass -H "X-Host: 192.168.0.1" -H "X-Connection-Timeout: 3" localhost:8980/api
+{"errorMessage":"2003: Can't connect to MySQL server on '192.168.0.1:3306' (timed out)","errorType":"InterfaceError","status":512}
+
+
+
