@@ -1,0 +1,12 @@
+
+# is there service?
+curl -k https://172.16.2.34:443/
+
+# list databases 
+curl -k --user dbapi:dbapi https://172.16.2.34:443/api
+
+# list table fields
+curl -k --user dbapi:dbapi https://172.16.2.34:443/api/example/table1
+
+
+

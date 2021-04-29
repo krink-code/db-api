@@ -45,7 +45,7 @@ curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql
 ```  
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user
 ```
-#### query the mysql.user table fields=user,host,password and limit 3
+#### query the mysql.user table fields=user,host and limit 2,3
 ```  
 curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host&limit=2,3"
 ```
