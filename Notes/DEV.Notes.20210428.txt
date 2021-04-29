@@ -52,4 +52,25 @@ http://mysql-python.sourceforge.net/MySQLdb.html
 
 
 
+---
+
+import mysql.connector
+
+https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+
+https://github.com/mysql/mysql-connector-python
+
+
+--- 
+
+way better driver already...
+
+🐰 krink@KarlMBPro Notes % curl --user dbuser:dbpass  -H "X-Host: 127.0.1.1" 127.0.0.1:8980/api
+{"errorMessage":"2003: Can't connect to MySQL server on '127.0.1.1:3306' (60 Operation timed out)","errorType":"Internal Server Error","status":500}
+🐰 krink@KarlMBPro Notes % curl --user dbuser:dbpass  -H "X-Port: 3307" 127.0.0.1:8980/api
+{"errorMessage":"2003: Can't connect to MySQL server on '127.0.0.1:3307' (61 Connection refused)","errorType":"Internal Server Error","status":500}
+🐰 krink@KarlMBPro Notes %
+
+
+
 

@@ -1,16 +1,49 @@
 
 # python3
 
-__version__='0.0.1.dev.20210428-3'
+__version__='0.0.1.dev.20210428-4.mysql.connector.1'
 
 from app import app
 from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
 #from werkzeug.exceptions import Unauthorized
-from db import mysql
-import cryptography
+#from db import mysql
+#import cryptography
 from functools import wraps
+
+import mysql.connector
+#https://github.com/mysql/mysql-connector-python
+#https://dev.mysql.com/doc/connector-python/en/connector-python-example-connecting.html
+#pip3 install mysql-connector-python
+
+#config = {
+#    'user': request.authorization.username,
+#    'password': request.authorization.password,
+#    'database': '',
+#    'host': request.headers.get('X-Host', '127.0.0.1'),
+#    'port': int(request.headers.get('X-Port', '3306')),
+#    'raise_on_warnings': True,
+#    'auth_plugin': 'mysql_native_password',
+#}
+
+#db = None
+def sqlConnection():
+    #global db
+    config = {
+        'user': request.authorization.username,
+        'password': request.authorization.password,
+        'database': '',
+        'host': request.headers.get('X-Host', '127.0.0.1'),
+        'port': int(request.headers.get('X-Port', '3306')),
+        'raise_on_warnings': True,
+        'auth_plugin': 'mysql_native_password',
+    }
+    db = mysql.connector.connect(**config)
+    return db
+
+
+
 
 
 #GET    /                             # Show status
@@ -24,6 +57,7 @@ def root():
 def show_databases():
     SQL = 'SHOW DATABASES'
     rows = fetchall(SQL)
+
     return jsonify(rows), 200
 
 
@@ -407,33 +441,52 @@ def handle_exception(e):
 
 
 
-def Conf(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        app.config['MYSQL_DATABASE_USER'] = request.authorization.username
-        app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
-        app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
-        app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
-        #if not request.authorization:
-        #    print('no request.authorization')
-        #    return jsonify(status=401,errorType="Unauthorized",errorMessage="Requires BasicAuth"), 401
-        return f(*args, **kwargs)
-    return decorated
+#def Conf(f):
+#    @wraps(f)
+#    def decorated(*args, **kwargs):
+#        #app.config['MYSQL_DATABASE_USER'] = request.authorization.username
+#        #app.config['MYSQL_DATABASE_PASSWORD'] = request.authorization.password
+#        #app.config['MYSQL_DATABASE_HOST'] = request.headers.get('X-Host', '127.0.0.1')
+#        #app.config['MYSQL_DATABASE_PORT'] = int(request.headers.get('X-Port', '3306'))
+#        #if not request.authorization:
+#        #    print('no request.authorization')
+#        #    return jsonify(status=401,errorType="Unauthorized",errorMessage="Requires BasicAuth"), 401
+#
+#        #db = mysql.connector.connect
+#
+#        config = {
+#        'user': request.authorization.username,
+#        'password': request.authorization.password,
+#        'database': '',
+#        'host': request.headers.get('X-Host', '127.0.0.1'),
+#        'port': int(request.headers.get('X-Port', '3306')),
+#        'raise_on_warnings': True,
+#        'auth_plugin': 'mysql_native_password',
+#        }
+#
+#        return f(*args, **kwargs)
+#    return decorated
 
 
-@Conf
+#@Conf
 def fetchall(sql):
-    conn = mysql.connect()
-    cur = conn.cursor()
+    #print(config)
+    cnx = sqlConnection()
+    #cnx = mysql.connector.connect(**config)
+    #conn = mysql.connect()
+    #cur = conn.cursor()
+    cur = cnx.cursor(buffered=True)
     cur.execute(sql)
     rows = cur.fetchall()
     cur.close()
-    conn.close()
+    #conn.close()
+    cnx.close()
     return rows
 
-@Conf
+#@Conf
 def fetchone(sql):
-    conn = mysql.connect()
+    sqlConnection()
+    db = mysql.connect()
     cur = conn.cursor()
     cur.execute(sql)
     row = cur.fetchone()
@@ -441,7 +494,7 @@ def fetchone(sql):
     conn.close()
     return row
 
-@Conf
+#@Conf
 def insertsql(sql, values):
     conn = mysql.connect()
     cur = conn.cursor()
@@ -456,7 +509,7 @@ def insertsql(sql, values):
     conn.close()
     return True
 
-@Conf
+#@Conf
 def commitsql(sql):
     conn = mysql.connect()
     cur = conn.cursor()
