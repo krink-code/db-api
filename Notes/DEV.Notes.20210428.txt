@@ -48,3 +48,8 @@ https://stackoverflow.com/questions/5543490/json-naming-convention-snake-case-ca
 
 
 
+http://mysql-python.sourceforge.net/MySQLdb.html
+
+
+
+
