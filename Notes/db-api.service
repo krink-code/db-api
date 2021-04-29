@@ -1,0 +1,16 @@
+#file:/etc/systemd/system/db-api.service
+
+[Unit]
+Description=Gunicorn instance to serve db-api
+After=network.target
+
+[Service]
+User=nobody
+Group=nobody
+WorkingDirectory=/opt/db-api
+Environment="PATH=/opt/db-api/env/bin"
+ExecStart=/opt/db-api/env/bin/gunicorn --log-level=info -w 4 --bind 0.0.0.0:8980 -m 007 --chdir /opt/db-api wsgi:app 
+
+[Install]
+WantedBy=multi-user.target
+
