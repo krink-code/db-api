@@ -70,7 +70,7 @@ curl --user dbuser:dbpass -H "X-Host: 127.0.1.1" -H "X-Port: 3307" "http://127.0
 ```   
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/3   
 ```   
-#### get record 3 from example database table1 by primay key name=47245ec8-a7d3-11eb-880f-acde48001122 with fields id,name HTTP GET   
+#### get record 3 from example database table1 by name=47245ec8-a7d3-11eb-880f-acde48001122 with fields id,name HTTP GET   
 ```   
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name&fields=id,name"   
 ```   
@@ -89,7 +89,7 @@ curl --user dbuser:dbpass \
      -d '{"description": "A single colmn update"}' \   
     http://127.0.0.1:8980/api/example/table1/9    
 ```   
-#### update a row element specify primary key name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP PATCH   
+#### update a row element specify name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP PATCH   
 ```   
 curl --user dbuser:dbpass \   
      -X PATCH  \   
