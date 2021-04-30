@@ -97,4 +97,221 @@ Address: 34.225.171.227
 
 
 
+---
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/nic_content/content_unstructured?q=true&fields=id,revision_comment,last_modified,last_modifying_user&limit=4,2" | python3 -m json.tool
+[
+    [
+        17,
+        "initial comment",
+        "Tue, 02 Jun 2015 12:33:33 GMT",
+        "somebody@192.168.2.241"
+    ],
+    [
+        18,
+        "initial comment",
+        "Tue, 02 Jun 2015 12:33:27 GMT",
+        "sombody@192.168.2.241"
+    ]
+]
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/nic_content/content_unstructured/17?fields=id,revision_comment,last_modified,last_modifying_user" 
+[17,"initial comment","Tue, 02 Jun 2015 12:33:33 GMT","sombody@192.168.2.241"]
+
+
+--- 
+
+example database
+
+```
+CREATE DATABASE IF NOT EXISTS example;
+
+CREATE TABLE IF NOT EXISTS example.table1 (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+
+INSERT INTO example.table1 (name)
+VALUES 
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID()),
+ (UUID());
+
+```
+
+
+examle dbapi database user.  with select all on all databases for this demo
+```
+create role dbapi;
+grant all privileges on example.* to 'dbapi';
+grant select on *.* to 'dbapi';
+create user 'dbapi' identified by 'dbapi';
+grant 'dbapi' to 'dbapi'@'%';
+set default role dbapi for 'dbapi'@'%';
+```
+
+
+---
+
+
+# list all records in table1.  
+
+DEV.NOTE:  while this is unrestrictive to the client,
+the service can be abused.  and/or take down the service.
+more common practice it to limit the return result sets to 10 or 100 records maximum.
+and force the client to use pagination.
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1?q=true" | python3 -m json.tool                                                     
+[
+    [
+        1,
+        "9a1190e8-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        2,
+        "9a119232-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        3,
+        "9a119655-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        4,
+        "9a1196c5-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        5,
+        "9a1196f0-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        6,
+        "9a119736-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        7,
+        "9a119781-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        8,
+        "9a1197bd-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        9,
+        "9a1197e5-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        10,
+        "9a11980b-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ]
+]
+🐰 karl.rink@Karl-MacBook-Pro ~ %
+
+
+
+# get just one record by column name
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/9a1197e5-a922-11eb-9f35-12d12df36949?column=name"
+[9,"9a1197e5-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+
+#  get by id
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/9"                                               
+[9,"9a1197e5-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+DEV.NOTE:  i do not necessarily agree with the standards here.
+the RESTful standandards for updating a record is CRUD HTTP PATCH.  
+which returns a 204 No Content, which does not return a message body to the client. 
+
+# update description of id 9
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X PATCH -H "Content-Type: application/json" -d '{"description": "A single colmn update via curl"}' https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/9
+{"message":"Created","status":201,"update":true}
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/9"
+[9,"9a1197e5-a922-11eb-9f35-12d12df36949","A single colmn update via curl","Thu, 29 Apr 2021 12:39:25 GMT"]
+
+
+# lets insert a new record. this is a HTTP POST method
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi -X POST -H "Content-Type: application/json" --data '{"name":"hello","description":"inserted via curl"}' "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1"
+{"insert":true,"message":"Created","status":201}
+
+
+# get last two known records
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s --user dbapi:dbapi "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1?limit=9,2"                                                                                              
+[[10,"9a11980b-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"],[11,"hello","inserted via curl","Fri, 30 Apr 2021 10:32:26 GMT"]]
+
+
+# get record 3
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X GET "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/3"
+[3,"9a119655-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+
+# delete record 3
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X DELETE "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/3"
+{"delete":true,"message":"Deleted","status":211}
+
+DEV.NOTE:  idempotent
+the PUT method is supposed to be idempmotent
+which it is here.  is different that post(insert) or patch(update).  it's put(replace)
+
+# get id 7
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X GET "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/7"
+[7,"9a119781-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+# replace row 7 of table1 with this data...
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X PUT -H 'Content-Type: application/json' --data '{"id":7, "name":"hello", "description":"replaced via curl"}' "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1"  
+{"message":"Created","replace":true,"status":201}
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl --user dbapi:dbapi -X GET "https://mysqlapi.develop.nationsinfocorp.com/api/example/table1/7"                                                                                                         
+[7,"hello","replaced via curl","Fri, 30 Apr 2021 10:42:18 GMT"]
+  
+
+
+
+
+
+
+
+
+
+
 
