@@ -21,11 +21,24 @@ DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 GET    /api/<db>/<table>/count       # Count number of rows in a table
 ```   
 
----    
+---   
+ 
 ### Development HTTP service   
 ```   
 python3 main.py   
 ```   
+
+---   
+
+### python client using request module   
+```
+import requests
+req = requests.get('http://127.0.0.1:8980/api',   
+               auth=requests.auth.HTTPBasicAuth('username', 'password'))
+print(req.text)
+```
+
+---   
 
 ### curl client examples   
 
