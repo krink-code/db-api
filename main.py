@@ -7,7 +7,6 @@ from app import app
 from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
-from functools import wraps
 
 import mysql.connector
 
