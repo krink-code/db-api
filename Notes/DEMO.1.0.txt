@@ -8,5 +8,93 @@ curl -k --user dbapi:dbapi https://172.16.2.34:443/api
 # list table fields
 curl -k --user dbapi:dbapi https://172.16.2.34:443/api/example/table1
 
+# 
+curl -k --user dbapi:dbapi -H "X-Host: 172.16.2.34" "https://172.16.2.151:443/api/main/property_taxonomy?q=true&fields=id_property_taxonomy,main_category_type&limit=3,5"
+
+#
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s -k --user dbapi:dbapi -H "X-Host: 172.16.2.34" "https://172.16.2.151:443/api/example/table1?q=true" | python -m json.tool
+[
+    [
+        1,
+        "9a1190e8-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        2,
+        "9a119232-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        3,
+        "9a119655-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        4,
+        "9a1196c5-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        5,
+        "9a1196f0-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        6,
+        "9a119736-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        7,
+        "9a119781-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        8,
+        "9a1197bd-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        9,
+        "9a1197e5-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ],
+    [
+        10,
+        "9a11980b-a922-11eb-9f35-12d12df36949",
+        null,
+        "Thu, 29 Apr 2021 12:39:25 GMT"
+    ]
+]
+🐰 karl.rink@Karl-MacBook-Pro ~ %
+
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s -k --user dbapi:dbapi -H "X-Host: 172.16.2.34" "https://172.16.2.151:443/api/example/table1?q=true&limit=1"              
+[[1,"9a1190e8-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]]
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s -k --user dbapi:dbapi -H "X-Host: 172.16.2.34" "https://172.16.2.151:443/api/example/table1/1"              
+[1,"9a1190e8-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+
+🐰 karl.rink@Karl-MacBook-Pro ~ % curl -s -k --user dbapi:dbapi -H "X-Host: 172.16.2.34" "https://172.16.2.151:443/api/example/table1/9a1197e5-a922-11eb-9f35-12d12df36949?column=name" 
+[9,"9a1197e5-a922-11eb-9f35-12d12df36949",null,"Thu, 29 Apr 2021 12:39:25 GMT"]
+
+
+https://mysqlapi.develop.nationsinfocorp.com/
+Name:	mysqlapi.develop.nationsinfocorp.com
+Address: 34.225.171.227
+
+
 
 
