@@ -1,0 +1,29 @@
+
+i never did/make...
+
+GET    /api/<db>/<table>/count       # Count number of rows in a table
+
+...  i've seen databases get clobbered by count(*)
+     expecially when we moved from myisam to innodb
+
+
+SELECT COUNT(*) FROM ... WHERE ...
+
+try:
+
+SELECT SQL_CALC_FOUND_ROWS 1 FROM table;
+SELECT FOUND_ROWS();
+
+select sql_calc_found_rows * from table_name limit 0 ; 
+select found_rows() as table_rows ;
+
+and how accurate is this...?
+select  table_rows
+from    information_schema.tables
+where   table_schema = 'database_name'
+  and   table_name = 'table_name' ;
+
+
+https://stackoverflow.com/questions/5060366/mysql-fastest-way-to-count-number-of-rows
+
+
