@@ -11,7 +11,7 @@ ADD . /app
 
 CMD gunicorn --bind 0.0.0.0:8980 -w 3 --log-level=info wsgi:app
 
-EXPOSE 8089
+EXPOSE 8980
 
 ## Dockerfile for db-api
 #
