@@ -1,15 +1,17 @@
 
 # python3
 
-__version__='1.0.0'
+__version__='1.0.0-0'
 
-from app import app
+from flask import Flask
+
 from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
 
 import mysql.connector
 
+app = Flask(__name__)
 
 #GET    /                             # Show status
 @app.route("/", methods=['GET'])
@@ -289,7 +291,12 @@ def sqlConnection():
     return db
 
 
+
+def main():
+    app.run(port=8980, debug=False)    
+
+
 if __name__ == "__main__":
-    app.run(port=8980, debug=False)
+    main()
 
 
