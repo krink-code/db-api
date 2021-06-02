@@ -7,9 +7,9 @@ from setuptools import setup
 
 setup(
     name = "db-api-server",
-    packages = ["db-api-server"],
+    packages = ["db_api_server"],
     entry_points = {
-        "console_scripts": ['db-api-server = db_api_server.server:main']
+        "console_scripts": ['db_api_server = db_api_server.server:main']
         },
     version = '1.0.0-0',
     description = "db-api-server flask mysql.connector",
