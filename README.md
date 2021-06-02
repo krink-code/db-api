@@ -1,4 +1,5 @@
-# rest-db-api
+
+# db-api-server
 
 ## RESTful API for mysql/mariadb   
 
@@ -27,7 +28,7 @@ GET    /api/<db>/<table>/count       # Count number of rows in a table
  
 ### Development HTTP service   
 ```   
-python3 main.py   
+python3 src/db_api_server/server.py   
 ```   
 
 ---   
@@ -123,6 +124,23 @@ curl --user dbuser:dbpass \
 ```   
 
 ---    
+
+### pip install  
+```
+pip install db-api-server
+```
+```
+db-api-server
+``` 
+https://pypi.org/project/db-api-server    
+
+
+### docker    
+```
+docker pull dcsops/db-api
+```
+https://hub.docker.com/r/dcsops/db-api
+
 
 ### Production deployment   
 https://gunicorn.org/#deployment   
