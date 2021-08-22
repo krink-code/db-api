@@ -1,7 +1,7 @@
 
-# python3
+# -*- coding: utf-8 -*-
 
-__version__='1.0.0-0'
+__version__='1.0.1'
 
 from flask import Flask
 
@@ -9,9 +9,17 @@ from flask import request
 from flask import jsonify
 from werkzeug.exceptions import HTTPException
 
+from flask_cors import CORS
+
 import mysql.connector
 
 app = Flask(__name__)
+CORS(app)
+
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
+app.config['JSON_SORT_KEYS'] = True                 #default True
+app.config['JSONIFY_MIMETYPE'] = 'application/json' #default 'application/json'
+
 
 #GET    /                             # Show status
 @app.route("/", methods=['GET'])
