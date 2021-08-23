@@ -1,4 +1,5 @@
 # requirements.txt
 flask
+flask-cors
 mysql-connector-python
 gunicorn
