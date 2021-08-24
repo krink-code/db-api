@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.1'
+__version__='1.0.1-dev1'
 
 from flask import Flask
 
@@ -14,7 +14,7 @@ from flask_cors import CORS
 import mysql.connector
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, support_credentials=True)
 
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
 app.config['JSON_SORT_KEYS'] = True                 #default True
