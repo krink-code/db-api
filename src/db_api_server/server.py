@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.1-20210911-1'
+__version__='1.0.1-20210911-2'
 
 from flask import Flask
 
@@ -12,6 +12,8 @@ from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
 import mysql.connector
+
+import base64
 
 app = Flask(__name__)
 CORS(app, support_credentials=True)
@@ -147,41 +149,71 @@ def post_insert(db=None, table=None):
 
         #for fieldname, value in request.form.items():
 
-        records=[]
-        for key in request.form:
-            records.append(request.form[key])
+        #records=[]
+        #for key in request.form:
+        #    records.append(request.form[key])
 
-        placeholders = ['%s'] * len(request.form)
-        fields = ",".join([str(key) for key in request.form.items()])
-        places = ",".join([str(key) for key in placeholders])
+        #placeholders = ['%s'] * len(request.form)
+        #fields = ",".join([str(key) for key in request.form.items()])
+        #places = ",".join([str(key) for key in placeholders])
             
 
-        token = request.form.get('token', None)
+        #token = request.form.get('token', None)
+        credentials = request.form.get('credentials', None)
 
-        if token:
-            print('token is ' + token)
-            import base64
+        if credentials:
+
+            #records=[]
+            #for key in request.form:
+            #    records.append(request.form[key])
+
+            #placeholders = ['%s'] * len(request.form)
+            #fields = ",".join([str(key) for key in request.form.items()])
+            #places = ",".join([str(key) for key in placeholders])
+
+            columns=[]
+            records=[]
+            for key,val in request.form.items():
+                if key == 'credentials':
+                    continue
+                #columns.append(str(key))
+                columns.append(key)
+                records.append(request.form[key])
+
+            count = len(request.form) - 1
+            placeholders = ['%s'] * count
+            #placeholders = ['%s'] * len(request.form) - 1
+
+            places = ",".join([str(key) for key in placeholders])
+            #place = 'Empty'
+
+            fields = ",".join([str(key) for key in columns])
+            #fields = 'Empty'
+
+
+            #print('token is ' + token)
+            #import base64
             #data = base64.b64decode(token)
             #data = token.decode('ascii')
 
-            base64_bytes = token.encode('ascii')
-            message_bytes = base64.b64decode(base64_bytes)
-            message = message_bytes.decode('ascii')
-            print(message)
+            base64_bytes = credentials.encode('ascii')
+            token_bytes = base64.b64decode(base64_bytes)
+            untoken = token_bytes.decode('ascii')
+            #print(message)
 
-            base64_user = message.split(":", 1)[0]
-            base64_pass = message.split(":", 1)[1]
+            base64_user = untoken.split(":", 1)[0]
+            base64_pass = untoken.split(":", 1)[1]
 
-            print('user ' + base64_user)
-            print('pass ' + base64_pass)
+            #print('user ' + base64_user)
+            #print('pass ' + base64_pass)
 
             #user = base64_user
             #password = base64_pass
             #app.config['user'] = base64_user
             #app.config['password'] = base64_pass
 
-            name = request.form.get('name', None)
-            description = request.form.get('description', None)
+            #name = request.form.get('name', None)
+            #description = request.form.get('description', None)
 
             #SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
             #insert = sqlexec(SQL, records)
@@ -192,7 +224,7 @@ def post_insert(db=None, table=None):
 
             SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
-            print(SQL)
+            #print(SQL)
 
             insert = sqlInsert(SQL, records, base64_user, base64_pass)
 
@@ -201,11 +233,12 @@ def post_insert(db=None, table=None):
             else:
                 return jsonify(status=461, message="Failed Create", insert=False), 461
 
-        return jsonify(status=299, message="two hundred ninty nine", insert=False), 299
+        #return jsonify(status=299, message="two hundred ninty nine", insert=False), 299
+        return jsonify(status=401, message="Unauthorized", details="No valid authentication credentials for the target resource", insert=False), 401
 
     else: 
 
-        return jsonify(status=417, message="Expectation Failed", detail="The server cannot meet the requirements of the Expect request-header field", insert=False), 417
+        return jsonify(status=417, message="Expectation Failed", details="The server cannot meet the requirements of the Expect request-header field", insert=False), 417
 
 
 #DELETE /api/<db>/<table>/:id         # Delete a row by primary key
