@@ -79,7 +79,9 @@ curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3
 ```   
 #### insert a new row into example database table1 HTTP POST   
 ```   
-curl --user dbuser:dbpass -X POST -H "Content-Type: application/json" \   
+curl --user dbuser:dbpass \
+     -X POST \
+     -H "Content-Type: application/json" \   
      --data '{"name":"hello","description":"inserted via curl"}' \   
      "http://127.0.0.1:8980/api/example/table1"   
 ```  
@@ -94,6 +96,16 @@ curl -X POST \
      "http://127.0.0.1:8980/api/example/table1"
 ``` 
 
+form data requires credentials in base64 encoding
+
+```
+    <form action="http://127.0.0.1:8980/api/example/table1" method="POST">
+      <input type="text" name="credentials" value="base64">
+      <input type="text" name="name" value="name">
+      <input type="text" name="description" value="form data">
+      <input type="submit">
+    </form>
+```
 
 #### update a row element by primary key id=9 HTTP PATCH   
 ```   
@@ -154,7 +166,7 @@ docker pull dcsops/db-api
 https://hub.docker.com/r/dcsops/db-api
 
 
-### Production deployment   
+### Production deployments   
 https://gunicorn.org/#deployment   
 
 ---   
@@ -162,5 +174,10 @@ https://gunicorn.org/#deployment
 ### RESTful   
 https://en.wikipedia.org/wiki/Representational_state_transfer   
 
+### Basic auth   
+https://en.wikipedia.org/wiki/Basic_access_authentication
+
+### Base64   
+https://en.wikipedia.org/wiki/Base64    
 
 
