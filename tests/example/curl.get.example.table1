@@ -1,0 +1,9 @@
+
+#curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1
+#curl -H "Authorization: Basic ZGJ1c2VyOmRicGFzcw==" http://127.0.0.1:8980/api/example/table1
+
+#echo -n dbuser:dbpass | base64
+
+ curl -H "Authorization: Basic ZGJ1c2VyOmRicGFzcw==" "http://127.0.0.1:8980/api/example/table1?q=true"
+
+

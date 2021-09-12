@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.1-dev1'
+__version__='1.0.1-20210911-1'
 
 from flask import Flask
 
@@ -93,6 +93,8 @@ def get_one(db=None, table=None, key=None):
         return jsonify(status=404, message="Not Found"), 404
 
 
+#app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+
 #POST   /api/<db>/<table>             # Create a new row
 #                                     # key1=val1,key2=val2
 @app.route("/api/<db>/<table>", methods=['POST'])
@@ -101,28 +103,109 @@ def post_insert(db=None, table=None):
     assert db == request.view_args['db']
     assert table == request.view_args['table']
 
-    if not request.headers['Content-Type'] == 'application/json':
-        return jsonify(status=412, errorType="Precondition Failed"), 412
+    #if not request.headers['Content-Type'] == 'application/json':
+    #    return jsonify(status=412, errorType="Precondition Failed"), 412
 
-    post = request.get_json()
+    # json or form data
 
-    placeholders = ['%s'] * len(post)
+    if request.is_json:
 
-    fields = ",".join([str(key) for key in post])
-    places = ",".join([str(key) for key in placeholders])
+        post = request.get_json()
 
-    records=[]
-    for key in post:
-        records.append(post[key])
+        placeholders = ['%s'] * len(post)
 
-    SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+        fields = ",".join([str(key) for key in post])
+        places = ",".join([str(key) for key in placeholders])
 
-    insert = sqlexec(SQL, records)
+        records=[]
+        for key in post:
+            records.append(post[key])
 
-    if insert > 0:
-        return jsonify(status=201, message="Created", insert=True), 201
-    else:
-        return jsonify(status=461, message="Failed Create", insert=False), 461
+        SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+
+        insert = sqlexec(SQL, records)
+
+        if insert > 0:
+            return jsonify(status=201, message="Created", insert=True), 201
+        else:
+            return jsonify(status=461, message="Failed Create", insert=False), 461
+
+    elif request.form:
+
+        #for fieldname, value in request.form.items():
+        #    print('field ' + fieldname)
+        #    print('value ' + value)
+
+        #records=[]
+        #for key in post:
+        #    records.append(post[key])
+
+
+        #placeholders = ['%s'] * len(post)
+        #fields = ",".join([str(key) for key in post])
+        #places = ",".join([str(key) for key in placeholders])
+
+        #for fieldname, value in request.form.items():
+
+        records=[]
+        for key in request.form:
+            records.append(request.form[key])
+
+        placeholders = ['%s'] * len(request.form)
+        fields = ",".join([str(key) for key in request.form.items()])
+        places = ",".join([str(key) for key in placeholders])
+            
+
+        token = request.form.get('token', None)
+
+        if token:
+            print('token is ' + token)
+            import base64
+            #data = base64.b64decode(token)
+            #data = token.decode('ascii')
+
+            base64_bytes = token.encode('ascii')
+            message_bytes = base64.b64decode(base64_bytes)
+            message = message_bytes.decode('ascii')
+            print(message)
+
+            base64_user = message.split(":", 1)[0]
+            base64_pass = message.split(":", 1)[1]
+
+            print('user ' + base64_user)
+            print('pass ' + base64_pass)
+
+            #user = base64_user
+            #password = base64_pass
+            #app.config['user'] = base64_user
+            #app.config['password'] = base64_pass
+
+            name = request.form.get('name', None)
+            description = request.form.get('description', None)
+
+            #SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+            #insert = sqlexec(SQL, records)
+
+            #placeholders = ['%s'] * len(post)
+            #fields = ",".join([str(key) for key in post])
+            #places = ",".join([str(key) for key in placeholders])
+
+            SQL = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+
+            print(SQL)
+
+            insert = sqlInsert(SQL, records, base64_user, base64_pass)
+
+            if insert > 0:
+                return jsonify(status=201, message="Created", insert=True), 201
+            else:
+                return jsonify(status=461, message="Failed Create", insert=False), 461
+
+        return jsonify(status=299, message="two hundred ninty nine", insert=False), 299
+
+    else: 
+
+        return jsonify(status=417, message="Expectation Failed", detail="The server cannot meet the requirements of the Expect request-header field", insert=False), 417
 
 
 #DELETE /api/<db>/<table>/:id         # Delete a row by primary key
@@ -280,10 +363,32 @@ def sqlcommit(sql):
     cnx.close()
     return rowcount
 
-def sqlConnection():
+
+def sqlInsert(sql, values, user, password):
+    cnx = sqlConnection(user, password)
+    cur = cnx.cursor(buffered=True)
+    cur.execute(sql, values)
+    cnx.commit()
+    rowcount = cur.rowcount
+    cur.close()
+    cnx.close()
+    return rowcount
+
+
+
+def sqlConnection(user=None, password=None):
+
+    if not user:
+        user = request.authorization.username
+
+    if not password:
+        password = request.authorization.password
+
     config = {
-        'user':                   request.authorization.username,
-        'password':               request.authorization.password,
+        #'user':                   request.authorization.username,
+        #'password':               request.authorization.password,
+        'user':                   user,
+        'password':               password,
         'host':                   request.headers.get('X-Host', '127.0.0.1'),
         'port':               int(request.headers.get('X-Port', '3306')),
         'database':               request.headers.get('X-Db', ''),

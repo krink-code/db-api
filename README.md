@@ -82,7 +82,19 @@ curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3
 curl --user dbuser:dbpass -X POST -H "Content-Type: application/json" \   
      --data '{"name":"hello","description":"inserted via curl"}' \   
      "http://127.0.0.1:8980/api/example/table1"   
+```  
+
+base64(dbuser:dbpass)
+
 ```   
+curl -X POST \
+     -H "Authorization: Basic <base64>" \
+     -H "Content-Type: application/json" \
+     --data '{"name":"hello","description":"inserted via post"}' \
+     "http://127.0.0.1:8980/api/example/table1"
+``` 
+
+
 #### update a row element by primary key id=9 HTTP PATCH   
 ```   
 curl --user dbuser:dbpass \   
