@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="version" content="20210916-1">
+    <title></title>
+</head>
+
+<body>
+       <noscript>Please Enable JavaScript</noscript>
+
+<div class="container"></div>
+
+<script>
+
+let url    = 'http://127.0.0.1:8980/api/example/table1?q=true';
+let base64 = '';
+
+async function get() {
+
+    let headers = new Headers();
+    headers.append('Authorization', 'Basic ' + base64);
+
+    let res = await fetch(url, {
+        method: 'GET',
+        headers: headers
+    })
+        .then(response => response.json())
+        .then(json => document.write(json))
+        .catch(err => document.write('Request Failed', err));
+
+
+    history.pushState({view: 'landing'}, "landing", "?landing=true");
+}
+//get();
+
+async function renderGet() {
+
+    let html = '';
+
+    try {
+        let headers = new Headers();
+        headers.append('Authorization', 'Basic ' + base64);
+
+        let response = await fetch(url, {mode:'cors', headers: headers});
+        let items = await response.json();
+        items.forEach(item => {
+            //let htmlSegment = `<div> <button onclick="renderBucketFiles('${item}')">${bucket}</button> </div>`;
+            let htmlSegment = `<div> ${item} </div>`;
+            html += htmlSegment;
+        });    
+    } catch (error) {
+        html += error;
+    }
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    history.pushState({view: 'none'}, "none", "?view=none");
+}
+
+
+function landing() {
+
+        //get();
+        renderGet();
+}
+
+console.log('start');
+
+var params = new URLSearchParams(window.location.search);
+
+if (!params.toString()) {
+    landing();
+}
+
+if (params.has('view')) {
+    view = params.get('view');
+    landing();
+}
+
+console.log('done');
+
+</script>
+
+</body>
+</html>

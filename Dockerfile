@@ -8,7 +8,7 @@ ADD requirements.txt /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 ADD wsgi.py /app
-ADD src/db_api_server/server.py /app
+ADD src/db_api_server/server.py /app/db_api_server/server.py
 
 CMD gunicorn --bind 0.0.0.0:8980 -w 3 --log-level=info wsgi:app
 
