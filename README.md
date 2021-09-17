@@ -24,12 +24,42 @@ DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 GET    /api/<db>/<table>/count       # Count number of rows in a table
 ```   
 
+[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)      
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
+ 
+
 ---   
  
-### Development HTTP service   
+### Development HTTP service (run from source)    
 ```   
 python3 src/db_api_server/server.py   
 ```   
+
+---   
+
+### pip install  
+```
+pip install db-api-server
+```
+
+### Run command line
+```
+$ db-api-server  
+ * Serving Flask app "db_api_server.server" (lazy loading)
+ * Environment: production
+   WARNING: This is a development server. Do not use it in a production deployment.
+   Use a production WSGI server instead.
+ * Debug mode: off
+ * Running on http://127.0.0.1:8980/ (Press CTRL+C to quit)
+```
+
+### Run python module
+```
+python3 -m db_api_server
+```
 
 ---   
 
@@ -39,6 +69,23 @@ import requests
 req = requests.get('http://127.0.0.1:8980/api',   
                auth=requests.auth.HTTPBasicAuth('username', 'password'))
 print(req.text)
+```
+
+---
+
+### javascript client using fetch
+```
+let headers = new Headers();
+headers.append('Authorization', 'Basic ' + base64);
+
+fetch('http://127.0.0.1:8980/api', {
+    mode: 'cors',
+    method: 'GET',
+    headers: headers
+})
+    .then(response => response.json())
+    .then(json => document.write(json))
+    .catch(err => document.write('Request Failed', err));
 ```
 
 ---   
@@ -149,10 +196,6 @@ curl --user dbuser:dbpass \
 
 ---    
 
-### pip install  
-```
-pip install db-api-server
-```
 ```
 db-api-server
 ``` 
