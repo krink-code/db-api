@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210916-1">
+    <meta name="version" content="20210917-1">
     <title></title>
 </head>
 
@@ -13,57 +13,67 @@
 
 <script>
 
-let url    = 'http://127.0.0.1:8980/api/example/table1?q=true';
-let base64 = '';
+var origin = 'http://127.0.0.1:8980';
+//let base64 = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX=';
 
-async function get() {
-
-    let headers = new Headers();
-    headers.append('Authorization', 'Basic ' + base64);
-
-    let res = await fetch(url, {
-        method: 'GET',
-        headers: headers
-    })
-        .then(response => response.json())
-        .then(json => document.write(json))
-        .catch(err => document.write('Request Failed', err));
-
-
-    history.pushState({view: 'landing'}, "landing", "?landing=true");
+async function handleResponse(response) {
+    if (!response.ok) {
+        const json = await response.json();
+        let clear = '<button onclick="localStorage.clear();location.reload();">clear</button>';
+        throw new Error(JSON.stringify(json) +' '+ clear);
+    }
+    return response;
 }
-//get();
 
-async function renderGet() {
+function Login() {
+   var base64 = window.prompt("base64 credentials: ");
+   localStorage.setItem('base64', base64);
+   history.pushState({view: 'login'}, "login", "?view=login");
+}
+
+function Logout() {
+    localStorage.clear();
+    document.write('logout');
+    history.pushState({view: 'logout'}, "logout", "?logout=true");
+}
+
+
+
+async function renderDBs(base64) {
+
+    let url = origin + '/api';
+
+    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await response.json();
 
     let html = '';
-
-    try {
-        let headers = new Headers();
-        headers.append('Authorization', 'Basic ' + base64);
-
-        let response = await fetch(url, {mode:'cors', headers: headers});
-        let items = await response.json();
-        items.forEach(item => {
-            //let htmlSegment = `<div> <button onclick="renderBucketFiles('${item}')">${bucket}</button> </div>`;
-            let htmlSegment = `<div> ${item} </div>`;
-            html += htmlSegment;
-        });    
-    } catch (error) {
-        html += error;
-    }
+    items.forEach(item => {
+        let htmlSegment = `<div> <button onclick="renderBucketFiles('${item}')">${item}</button> </div>`;
+        //let htmlSegment = `<div> ${item} </div>`;
+        html += htmlSegment;
+    });    
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-    history.pushState({view: 'none'}, "none", "?view=none");
+    history.pushState({view: 'db'}, "db", "?view=db");
 }
 
 
 function landing() {
 
-        //get();
-        renderGet();
+    if ( ! localStorage.getItem('base64') ) {
+        Login();
+    }
+
+    const base64 = localStorage.getItem('base64');
+
+    renderDBs(base64);
+
+
 }
 
 console.log('start');
@@ -72,6 +82,10 @@ var params = new URLSearchParams(window.location.search);
 
 if (!params.toString()) {
     landing();
+}
+
+if (params.has('logout')) {
+   Logout();
 }
 
 if (params.has('view')) {
