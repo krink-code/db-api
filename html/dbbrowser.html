@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="version" content="20210918-1">
+    <title></title>
+</head>
+
+<body>
+       <noscript>Please Enable JavaScript</noscript>
+
+<div class="container"></div>
+
+<script>
+
+var origin = 'http://127.0.0.1:8980';
+
+async function handleResponse(response) {
+    if (!response.ok) {
+        let json = await response.json();
+        let html = '<br><button onclick="localStorage.clear();location.reload();">clear</button>';
+        throw new Error(JSON.stringify(json) +' '+ html);
+    }
+    return response;
+}
+
+function Login() {
+
+   let user = window.prompt("username: ");
+   let pass = window.prompt("password: ");
+
+   let base64 = btoa(user + ':' + pass);
+
+   //var base64 = window.prompt("base64 credentials: ");
+   localStorage.setItem('base64', base64);
+   history.pushState({view: 'login'}, "login", "?view=login");
+}
+
+function Logout() {
+    localStorage.clear();
+    document.write('logout');
+    history.pushState({view: 'logout'}, "logout", "?logout=true");
+}
+
+
+
+async function showDBs() {
+
+    let url = origin + '/api';
+
+    let base64 = localStorage.getItem('base64');
+
+    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await response.json();
+
+    let html = '';
+    items.forEach(item => {
+        let htmlSegment = `<div> <button onclick="showTables('${item}')">${item}</button> </div>`;
+        //let htmlSegment = `<div> ${item} </div>`;
+        html += htmlSegment;
+    });    
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    history.pushState({view: 'dbs'}, "dbs", "?view=dbs");
+}
+
+async function showTables(db) {
+
+    let url = origin + '/api/' + db ;
+
+    let base64 = localStorage.getItem('base64');
+
+    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await response.json();
+
+    let html = '';
+    items.forEach(item => {
+        let htmlSegment = `<div> <button onclick="listItems('${db}', '${item}')">${item}</button> </div>`;
+        //let htmlSegment = `<div> ${item} </div>`;
+        html += htmlSegment;
+    });
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    history.pushState({db: db}, db, "?db=" + db);
+}
+
+
+async function listItems(db, table) {
+
+    let url = origin + '/api/' + db + '/' + table + "?limit=100" ;
+
+    let base64 = localStorage.getItem('base64');
+
+    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await response.json();
+
+    let html = '';
+    items.forEach(item => {
+        //let htmlSegment = `<div> ${item} </div>`;
+
+        //console.log(typeof item); //object
+        //let strArr = item.split(",");
+
+        let strArr = item.toString().split(",");
+        let _id = strArr[0];
+
+        console.log(_id)
+        //let id = '666';
+
+        //let htmlSegment = `<div> ${item} </div>`;
+        //let htmlSegment = `<div> <button onclick="getRow('${db}', '${item}', '${id}')">${id}</button>${item}</div>`;
+        let htmlSegment = `<div> <button onclick="getRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
+        html += htmlSegment;
+    });
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    history.pushState({db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
+}
+
+async function getRow(db, table, id) {
+
+    let url = origin + '/api/' + db + '/' + table + '/' + id ;
+
+    console.log('id is ' + id);
+    console.log(url);
+
+    let base64 = localStorage.getItem('base64');
+
+    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await response.json();
+
+    let html = '';
+    items.forEach(item => {
+        let htmlSegment = `<div> ${item} </div>`;
+        html += htmlSegment;
+    });
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
+}
+
+
+
+function landing() {
+
+    if ( ! localStorage.getItem('base64') ) {
+        Login();
+    }
+
+    showDBs();
+}
+
+console.log('start');
+
+var params = new URLSearchParams(window.location.search);
+
+if (!params.toString()) {
+    landing();
+}
+
+if (params.has('logout')) {
+   Logout();
+}
+
+if (params.has('view')) {
+    view = params.get('view');
+    landing();
+}
+
+if (params.has('db') && !params.has('table')) {
+    db = params.get('db');
+    showTables(db);
+}
+
+if (params.has('db') && params.has('table')) {
+    db    = params.get('db');
+    table = params.get('table');
+    listItems(db, table);
+}
+
+if (params.has('db') && params.has('table') && params.has('id')) {
+    db    = params.get('db');
+    table = params.get('table');
+    id    = params.get('id');
+    getRow(db, table, id);
+}
+
+console.log('done');
+
+</script>
+
+</body>
+</html>
