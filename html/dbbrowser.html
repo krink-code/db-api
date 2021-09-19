@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210918-1">
+    <meta name="version" content="20210918-2">
     <title></title>
 </head>
 
@@ -18,8 +18,9 @@ var origin = 'http://127.0.0.1:8980';
 async function handleResponse(response) {
     if (!response.ok) {
         let json = await response.json();
-        let html = '<br><button onclick="localStorage.clear();location.reload();">clear</button>';
-        throw new Error(JSON.stringify(json) +' '+ html);
+        throw new Error(JSON.stringify(json));
+        //let html = '<br><button onclick="localStorage.clear();location.reload();">clear</button>';
+        //throw new Error(JSON.stringify(json) +' '+ html);
     }
     return response;
 }
@@ -43,16 +44,17 @@ function Logout() {
 }
 
 
-
 async function showDBs() {
 
     let url = origin + '/api';
 
     let base64 = localStorage.getItem('base64');
 
+    //let html = `<div> clear </div>`;
+
     let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
-        .catch(err => document.write('Request Failed ', err));
+        .catch(err => document.write('Request Failed ', err + '<div><button onclick="localStorage.clear();location.reload();">clear</button></div>'));
 
     let items = await response.json();
 
@@ -117,12 +119,12 @@ async function listItems(db, table) {
         let strArr = item.toString().split(",");
         let _id = strArr[0];
 
-        console.log(_id)
+        //console.log(_id)
         //let id = '666';
 
         //let htmlSegment = `<div> ${item} </div>`;
         //let htmlSegment = `<div> <button onclick="getRow('${db}', '${item}', '${id}')">${id}</button>${item}</div>`;
-        let htmlSegment = `<div> <button onclick="getRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
+        let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
         html += htmlSegment;
     });
 
@@ -132,12 +134,12 @@ async function listItems(db, table) {
     history.pushState({db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
 }
 
-async function getRow(db, table, id) {
+async function showRow(db, table, id) {
 
     let url = origin + '/api/' + db + '/' + table + '/' + id ;
 
-    console.log('id is ' + id);
-    console.log(url);
+    //console.log('id is ' + id);
+    //console.log(url);
 
     let base64 = localStorage.getItem('base64');
 
@@ -168,9 +170,43 @@ function landing() {
     }
 
     showDBs();
+
+    //html = '<div>footer</div>';
+    //let container = document.querySelector('.container');
+    //container.innerHTML = html;
+
 }
 
+//var start = window.performance.now();
+var start = performance.now();
 console.log('start');
+
+//window.onbeforeunload = function (e) {
+//   console.log('browser back button activated'); 
+//}
+
+//window.addEventListener('beforeunload', function (e) {
+//    console.log('browser back button activated');
+//});
+
+//window.onbeforeunload = function() {
+//    console.log('browser back button activated');
+//    return 'You have unsaved changes!';
+//};
+
+//window.addEventListener('beforeunload',(event) =>{
+//    // do something here
+//    console.log('HIT beforeunload activated');
+//});
+
+window.addEventListener('popstate', function (event) {
+//Your code here
+    console.log('event popstate activated');
+    location.reload();
+});
+
+
+
 
 var params = new URLSearchParams(window.location.search);
 
@@ -202,10 +238,13 @@ if (params.has('db') && params.has('table') && params.has('id')) {
     db    = params.get('db');
     table = params.get('table');
     id    = params.get('id');
-    getRow(db, table, id);
+    console.log('wtf');
+    showRow(db, table, id);
 }
 
-console.log('done');
+//var done = window.performance.now() - start;
+var done = performance.now() - start;
+console.log('done ' + done);
 
 </script>
 
