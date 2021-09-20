@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210920-1">
+    <meta name="version" content="20210920-2">
     <title></title>
 </head>
 
@@ -13,7 +13,7 @@
 
 <script>
 
-var origin = 'http://127.0.0.1:8980';
+//var origin = 'http://127.0.0.1:8980';
 
 async function handleResponse(response) {
     if (!response.ok) {
@@ -24,22 +24,20 @@ async function handleResponse(response) {
 }
 
 function Login() {
-
+   let origin = window.prompt("url: ", 'http://127.0.0.1:8980');
    let user = window.prompt("username: ");
    let pass = window.prompt("password: ");
 
    let base64 = btoa(user + ':' + pass);
-
    localStorage.setItem('base64', base64);
+   localStorage.setItem('origin', origin);
+
    history.pushState({view: 'login'}, "login", "?view=login");
 }
 
 function Logout() {
     localStorage.clear();
     let container = document.querySelector('.container');
-    //let html = '<div>Logout <button onclick="alert()">clear</button></div>';
-    //let html = 'Logout <a href=".">href</a>';    
-    //let html = '<div><button onclick="Login()">Login</button></div>';
     let html = '<a href="?">Login</a>';    
     container.innerHTML = html;
 
@@ -49,9 +47,13 @@ function Logout() {
 
 async function showDBs() {
 
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
+    console.log('hit ' + origin);
+
     let url = origin + '/api';
 
-    let base64 = localStorage.getItem('base64');
 
     //let html = `<div> clear </div>`;
 
@@ -68,6 +70,8 @@ async function showDBs() {
         html += htmlSegment;
     });    
 
+    html += '<hr><div><button onclick="localStorage.clear();location.reload();">Logout</button></div>';
+
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
@@ -78,9 +82,11 @@ async function showDBs() {
 
 async function showTables(db) {
 
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
     let url = origin + '/api/' + db ;
 
-    let base64 = localStorage.getItem('base64');
 
     let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
@@ -106,9 +112,11 @@ async function showTables(db) {
 
 async function listItems(db, table) {
 
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
     let url = origin + '/api/' + db + '/' + table + "?limit=100" ;
 
-    let base64 = localStorage.getItem('base64');
 
     let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
@@ -137,6 +145,7 @@ async function listItems(db, table) {
 
 async function showRow(db, table, id) {
 
+    let origin = localStorage.getItem('origin');
     let base64 = localStorage.getItem('base64');
 
     let fields_url = origin + '/api/' + db + '/' + table ;
@@ -173,7 +182,10 @@ async function showRow(db, table, id) {
 
     items.forEach(item => {
 
-        let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <button onclick="patchRecord('${db}', '${table}', '${id}', '${columns[count]}')">edit</button> </div>`;
+        let column = columns[count];
+
+        //let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <button onclick="patchRecord('${db}', '${table}', '${id}', '${columns[count]}')">edit</button> </div>`;
+        let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <button onclick="patchRecord('${db}', '${table}', '${id}', '${column}')">edit</button> </div>`;
 
         //console.log(columns[count]);
 
@@ -190,41 +202,24 @@ async function showRow(db, table, id) {
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
 }
 
-/*
-#### update a row element by primary key id=9 HTTP PATCH   
-```   
-curl --user dbuser:dbpass \   
-     -X PATCH  \   
-     -H "Content-Type: application/json" \   
-     -H "Accept: application/json"  \   
-     -d '{"description": "A single colmn update"}' \   
-    http://127.0.0.1:8980/api/example/table1/9    
-```   
-*/
+async function submitpatchForm(event){
 
-async function submitpatchForm(event, column){
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
     event.preventDefault();
-    //console.log(event.target['phone_number'].value);
-    //console.log(event.target[column].value);
 
-    //let key = '';
-    //key += column;
+    let column = document.getElementById('patch').name;
+
     let value = event.target[column].value;
 
     console.log( 'col is ' + column);
     console.log( 'val is ' + value);
 
-    //const data = { key : value };
-    //const data = {  column : value };
-    //let data = "'"+ column "':" +  value ;
-
     let strTxt = '{ "' + column + '" : "' + value + '" }';
 
     const data = JSON.parse(strTxt);
 
-    //let data =  column +':'+ value ;
-
-    let base64 = localStorage.getItem('base64');
     let url = origin + '/api/' + db + '/' + table + '/' + id ;
 
     console.log(data);
@@ -252,9 +247,7 @@ async function submitpatchForm(event, column){
     document.title = db +' '+ table +' '+ id + ' ' + column;
 
     success = 'True';
-
     history.pushState({db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
-
 
 }
 
@@ -262,40 +255,25 @@ async function submitpatchForm(event, column){
 
 async function patchRecord(db, table, id, column) {
 
-
-
     console.log('patch'); 
     console.log(db); 
     console.log(table); 
     console.log(id); 
     console.log(column);
 
-    //let url = origin + '/api/' + db + '/' + table + '/' + id ;
-
     let html = '<div>' + column + '</div>';
 
-    html += '<form onsubmit="submitpatchForm(event, column)">';
-    html += '<input type="text" name="' + column + '" id="' + column + '" value="value">';
+    html += '<form onsubmit="submitpatchForm(event)">';
+    html += '<input type="text" name="' + column + '" id="patch" value="value">';
     html += '<input type="submit" value="patch"></form>';
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-    //value = document.getElementById('name').value;
-    //console.log(value);
-
-
     document.title = db +' '+ table +' '+ id +' ' + column;
 
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column);
 }
-
-    //const input = document.querySelector('input');
-
-    //const log = document.getElementById('log');
-
-
-
 
 
 function landing() {
@@ -305,10 +283,6 @@ function landing() {
     }
 
     showDBs();
-
-    //html = '<div>footer</div>';
-    //let container = document.querySelector('.container');
-    //container.innerHTML = html;
 
 }
 
@@ -335,11 +309,6 @@ if (params.has('view')) {
     view = params.get('view');
     landing();
 }
-
-//if (params.has('db') && !params.has('table')) {
-//    db = params.get('db');
-//    showTables(db);
-//}
 
 if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
     db    = params.get('db');
