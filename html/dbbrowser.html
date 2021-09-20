@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210919-1">
+    <meta name="version" content="20210920-1">
     <title></title>
 </head>
 
@@ -36,8 +36,13 @@ function Login() {
 
 function Logout() {
     localStorage.clear();
-    document.title = 'logout';
-    document.write('logout');
+    let container = document.querySelector('.container');
+    //let html = '<div>Logout <button onclick="alert()">clear</button></div>';
+    //let html = 'Logout <a href=".">href</a>';    
+    //let html = '<div><button onclick="Login()">Login</button></div>';
+    let html = '<a href="?">Login</a>';    
+    container.innerHTML = html;
+
     history.pushState({view: 'logout'}, "logout", "?logout=true");
 }
 
@@ -185,9 +190,79 @@ async function showRow(db, table, id) {
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
 }
 
+/*
+#### update a row element by primary key id=9 HTTP PATCH   
+```   
+curl --user dbuser:dbpass \   
+     -X PATCH  \   
+     -H "Content-Type: application/json" \   
+     -H "Accept: application/json"  \   
+     -d '{"description": "A single colmn update"}' \   
+    http://127.0.0.1:8980/api/example/table1/9    
+```   
+*/
+
+async function submitpatchForm(event, column){
+    event.preventDefault();
+    //console.log(event.target['phone_number'].value);
+    //console.log(event.target[column].value);
+
+    //let key = '';
+    //key += column;
+    let value = event.target[column].value;
+
+    console.log( 'col is ' + column);
+    console.log( 'val is ' + value);
+
+    //const data = { key : value };
+    //const data = {  column : value };
+    //let data = "'"+ column "':" +  value ;
+
+    let strTxt = '{ "' + column + '" : "' + value + '" }';
+
+    const data = JSON.parse(strTxt);
+
+    //let data =  column +':'+ value ;
+
+    let base64 = localStorage.getItem('base64');
+    let url = origin + '/api/' + db + '/' + table + '/' + id ;
+
+    console.log(data);
+
+    let patch = await fetch(url, {
+                               method: 'PATCH',
+                               mode: 'cors',
+                               headers: {
+                                   'Content-Type': 'application/json',
+                                   'Accept': 'application/json',
+                                   'Authorization': 'Basic ' + base64
+                               },
+                               body: JSON.stringify(data)
+                               })
+                          .then(handleResponse)
+                          .catch(err => document.write('Request Failed ', err));
+
+    let response = await patch.json();
+
+    html = JSON.stringify(response);
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    document.title = db +' '+ table +' '+ id + ' ' + column;
+
+    success = 'True';
+
+    history.pushState({db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
+
+
+}
+
 
 
 async function patchRecord(db, table, id, column) {
+
+
 
     console.log('patch'); 
     console.log(db); 
@@ -195,20 +270,20 @@ async function patchRecord(db, table, id, column) {
     console.log(id); 
     console.log(column);
 
-    let url = origin + '/api/' + db + '/' + table + '/' + id ;
+    //let url = origin + '/api/' + db + '/' + table + '/' + id ;
 
     let html = '<div>' + column + '</div>';
 
-    html += '<form action="' + url + '" id="patch-form">';
+    html += '<form onsubmit="submitpatchForm(event, column)">';
     html += '<input type="text" name="' + column + '" id="' + column + '" value="value">';
-    html += '<input type="submit" value="patch" > </form>';
-
+    html += '<input type="submit" value="patch"></form>';
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-    const patchForm = document.getElementById("patch-form");
-    patchForm.addEventListener("submit", handleFormSubmit);
+    //value = document.getElementById('name').value;
+    //console.log(value);
+
 
     document.title = db +' '+ table +' '+ id +' ' + column;
 
@@ -219,19 +294,6 @@ async function patchRecord(db, table, id, column) {
 
     //const log = document.getElementById('log');
 
-
-//    const patch = await fetch(url, {
-//                               method: 'PATCH',
-//                               mode: 'cors',
-//                               headers: {
-//                                   'Content-Type': 'application/json',
-//                                   'Accept': 'application/json',
-//                                   'Authorization': 'Basic ' + base64
-//                               },
-//                               body: JSON.stringify(data)
-//                               })
-//                          .then(handleResponse)
-//                          .catch(err => document.write('Request Failed ', err));
 
 
 
@@ -254,7 +316,7 @@ var start = performance.now();
 console.log('start');
 
 window.addEventListener('popstate', function (event) {
-    console.log('event popstate activated');
+    //console.log('event popstate activated');
     location.reload();
 });
 
@@ -274,10 +336,10 @@ if (params.has('view')) {
     landing();
 }
 
-if (params.has('db') && !params.has('table')) {
-    db = params.get('db');
-    showTables(db);
-}
+//if (params.has('db') && !params.has('table')) {
+//    db = params.get('db');
+//    showTables(db);
+//}
 
 if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
     db    = params.get('db');
@@ -294,6 +356,9 @@ if (params.has('db') && params.has('table') && params.has('id') && params.has('c
     db    = params.get('db');
     table = params.get('table');
     listItems(db, table);
+} else if (params.has('db')) {
+    db    = params.get('db');
+    showTables(db);
 }
 
 
