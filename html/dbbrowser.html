@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210918-2">
+    <meta name="version" content="20210919-1">
     <title></title>
 </head>
 
@@ -19,8 +19,6 @@ async function handleResponse(response) {
     if (!response.ok) {
         let json = await response.json();
         throw new Error(JSON.stringify(json));
-        //let html = '<br><button onclick="localStorage.clear();location.reload();">clear</button>';
-        //throw new Error(JSON.stringify(json) +' '+ html);
     }
     return response;
 }
@@ -32,13 +30,13 @@ function Login() {
 
    let base64 = btoa(user + ':' + pass);
 
-   //var base64 = window.prompt("base64 credentials: ");
    localStorage.setItem('base64', base64);
    history.pushState({view: 'login'}, "login", "?view=login");
 }
 
 function Logout() {
     localStorage.clear();
+    document.title = 'logout';
     document.write('logout');
     history.pushState({view: 'logout'}, "logout", "?logout=true");
 }
@@ -68,6 +66,8 @@ async function showDBs() {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    document.title = 'show databases';
+
     history.pushState({view: 'dbs'}, "dbs", "?view=dbs");
 }
 
@@ -93,6 +93,8 @@ async function showTables(db) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    document.title = db;
+
     history.pushState({db: db}, db, "?db=" + db);
 }
 
@@ -111,19 +113,11 @@ async function listItems(db, table) {
 
     let html = '';
     items.forEach(item => {
-        //let htmlSegment = `<div> ${item} </div>`;
-
-        //console.log(typeof item); //object
-        //let strArr = item.split(",");
 
         let strArr = item.toString().split(",");
         let _id = strArr[0];
 
-        //console.log(_id)
-        //let id = '666';
-
         //let htmlSegment = `<div> ${item} </div>`;
-        //let htmlSegment = `<div> <button onclick="getRow('${db}', '${item}', '${id}')">${id}</button>${item}</div>`;
         let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
         html += htmlSegment;
     });
@@ -131,35 +125,114 @@ async function listItems(db, table) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    document.title = db +' '+ table;
+
     history.pushState({db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
 }
 
 async function showRow(db, table, id) {
 
-    let url = origin + '/api/' + db + '/' + table + '/' + id ;
-
-    //console.log('id is ' + id);
-    //console.log(url);
-
     let base64 = localStorage.getItem('base64');
 
-    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+    let fields_url = origin + '/api/' + db + '/' + table ;
+    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
+    let fields = await fields_response.json();
 
-    let items = await response.json();
+    let items_url = origin + '/api/' + db + '/' + table + '/' + id ;
+    let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+    let items = await items_response.json();
+
+    //console.log(fields);
+
+
+    const columns = [];
+    fields.forEach(item => {
+        //let htmlSegment = `<div> ${item} </div>`;
+        //html += htmlSegment;
+        //console.log(item);
+        let strArr = item.toString().split(",");
+        let field_name = strArr[0];
+
+        columns.push(field_name);
+
+    });
+
+    //console.log(columns);
 
     let html = '';
+    let count = 0;
+
     items.forEach(item => {
-        let htmlSegment = `<div> ${item} </div>`;
+
+        let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <button onclick="patchRecord('${db}', '${table}', '${id}', '${columns[count]}')">edit</button> </div>`;
+
+        //console.log(columns[count]);
+
         html += htmlSegment;
+        count++;
     });
+
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    document.title = db +' '+ table +' '+ id;
+
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
 }
+
+
+
+async function patchRecord(db, table, id, column) {
+
+    console.log('patch'); 
+    console.log(db); 
+    console.log(table); 
+    console.log(id); 
+    console.log(column);
+
+    let url = origin + '/api/' + db + '/' + table + '/' + id ;
+
+    let html = '<div>' + column + '</div>';
+
+    html += '<form action="' + url + '" id="patch-form">';
+    html += '<input type="text" name="' + column + '" id="' + column + '" value="value">';
+    html += '<input type="submit" value="patch" > </form>';
+
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    const patchForm = document.getElementById("patch-form");
+    patchForm.addEventListener("submit", handleFormSubmit);
+
+    document.title = db +' '+ table +' '+ id +' ' + column;
+
+    history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column);
+}
+
+    //const input = document.querySelector('input');
+
+    //const log = document.getElementById('log');
+
+
+//    const patch = await fetch(url, {
+//                               method: 'PATCH',
+//                               mode: 'cors',
+//                               headers: {
+//                                   'Content-Type': 'application/json',
+//                                   'Accept': 'application/json',
+//                                   'Authorization': 'Basic ' + base64
+//                               },
+//                               body: JSON.stringify(data)
+//                               })
+//                          .then(handleResponse)
+//                          .catch(err => document.write('Request Failed ', err));
+
 
 
 
@@ -177,35 +250,13 @@ function landing() {
 
 }
 
-//var start = window.performance.now();
 var start = performance.now();
 console.log('start');
 
-//window.onbeforeunload = function (e) {
-//   console.log('browser back button activated'); 
-//}
-
-//window.addEventListener('beforeunload', function (e) {
-//    console.log('browser back button activated');
-//});
-
-//window.onbeforeunload = function() {
-//    console.log('browser back button activated');
-//    return 'You have unsaved changes!';
-//};
-
-//window.addEventListener('beforeunload',(event) =>{
-//    // do something here
-//    console.log('HIT beforeunload activated');
-//});
-
 window.addEventListener('popstate', function (event) {
-//Your code here
     console.log('event popstate activated');
     location.reload();
 });
-
-
 
 
 var params = new URLSearchParams(window.location.search);
@@ -228,21 +279,24 @@ if (params.has('db') && !params.has('table')) {
     showTables(db);
 }
 
-if (params.has('db') && params.has('table')) {
+if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
+    db    = params.get('db');
+    table = params.get('table');
+    id    = params.get('id');
+    column = params.get('column');
+    patchRecord(db, table, id, column);
+} else if (params.has('db') && params.has('table') && params.has('id')) {
+    db    = params.get('db');
+    table = params.get('table');
+    id    = params.get('id');
+    showRow(db, table, id);
+} else if (params.has('db') && params.has('table')) {
     db    = params.get('db');
     table = params.get('table');
     listItems(db, table);
 }
 
-if (params.has('db') && params.has('table') && params.has('id')) {
-    db    = params.get('db');
-    table = params.get('table');
-    id    = params.get('id');
-    console.log('wtf');
-    showRow(db, table, id);
-}
 
-//var done = window.performance.now() - start;
 var done = performance.now() - start;
 console.log('done ' + done);
 
