@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210921-0">
+    <meta name="version" content="20210921-1">
     <title></title>
 </head>
 
@@ -340,13 +340,16 @@ async function insertItems(db, table) {
     let first_field = columns[0];
     //console.log(first_field);
 
-        let html = '<div>'+db+'.'+table+'</div>';
+    let html = '<div>'+db+'.'+table+'</div>';
     let htmlSegment = `<div><form method="POST" action="${fields_url}">`;
     columns.forEach(function (item, index) {
         //console.log(item, index);
         //let htmlSegment = `<div> ${item} </div>`;
-        htmlSegment += `<div>${item}</div>`;
-        htmlSegment += `<div><input type="text" name="${item}" id="${item}" value="${item}"></div>`;
+        //htmlSegment += `<div>${item}</div>`;
+        htmlSegment += `<div>`;
+        htmlSegment += `<input type="checkbox" name="${item}" id="${item}" value="${item}" checked  >`;
+        htmlSegment += `<label for="${item}">${item}</label>`;
+        htmlSegment += `</div>`;
     });
     htmlSegment += `<div>credentials</div>`;
     htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
