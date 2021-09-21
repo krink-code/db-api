@@ -24,7 +24,7 @@ DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 GET    /api/<db>/<table>/count       # Count number of rows in a table
 ```   
 
-[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)      
+[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
@@ -75,13 +75,9 @@ print(req.text)
 
 ### javascript client using fetch
 ```
-let headers = new Headers();
-headers.append('Authorization', 'Basic ' + base64);
-
 fetch('http://127.0.0.1:8980/api', {
-    mode: 'cors',
     method: 'GET',
-    headers: headers
+    headers: { Authorization: 'Basic ' + base64 }
 })
     .then(response => response.json())
     .then(json => document.write(json))

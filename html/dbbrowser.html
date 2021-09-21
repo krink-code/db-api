@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210920-3">
+    <meta name="version" content="20210920-4">
     <title></title>
 </head>
 
@@ -58,8 +58,11 @@ async function showDBs() {
 
     let html = '';
     items.forEach(item => {
-        let htmlSegment = `<div> <button onclick="showTables('${item}')">${item}</button> </div>`;
         //let htmlSegment = `<div> ${item} </div>`;
+        //let htmlSegment = `<div> <button onclick="showTables('${item}')">${item}</button> </div>`;
+
+
+        let htmlSegment = `<div> <a href="?db=${item}">${item}</a></div>`;
         html += htmlSegment;
     });    
 
@@ -89,8 +92,15 @@ async function showTables(db) {
 
     let html = '';
     items.forEach(item => {
-        let htmlSegment = `<div> <button onclick="listItems('${db}', '${item}')">${item}</button> </div>`;
-        //let htmlSegment = `<div> ${item} </div>`;
+        //let htmlSegment = `<div> <button onclick="listItems('${db}', '${item}')">${item}</button> `;
+        //let htmlSegment = `<div> <a href="?db=${db}&table=${item}">${item}</a> `;
+        //htmlSegment += `<a href="">Insert</a></div>`;
+
+        //let htmlSegment = `<div> <a href="?view=insert&db=${db}&table=${item}">${item}</a> `;
+        //htmlSegment += `<button onclick="insertItems('${db}', '${item}')">Insert</button></div>`;
+
+        let htmlSegment = `<div> <a href="?db=${db}&table=${item}">${item}</a> `;
+        htmlSegment    += `      <a href="?insert=form&db=${db}&table=${item}"><button>Insert</button></a> </div>`;
         html += htmlSegment;
     });
 
@@ -124,7 +134,10 @@ async function listItems(db, table) {
         let _id = strArr[0];
 
         //let htmlSegment = `<div> ${item} </div>`;
-        let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
+        //let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
+
+        let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${_id}">${item}</a> `;
+        htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${_id}')">Delete</button> </div>`;
         html += htmlSegment;
     });
 
@@ -134,6 +147,33 @@ async function listItems(db, table) {
     document.title = db +' '+ table;
 
     history.pushState({db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
+}
+
+async function deleteItem(db, table, id) {
+
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
+    //let url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
+    let url = origin + '/api/' + db + '/' + table + '/' + id  ;
+    let delete_response = await fetch(url, {method:'DELETE',headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let response = await delete_response.json();
+
+    html = JSON.stringify(response);
+
+    //html += '<hr><a href="?db='+db+'&table='+table">'+db+'  ' + table + '</a>';
+    html += '<hr><a href="?db='+db+'&table='+table+'">db.table</a>';
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    document.title = db +' '+ table +' '+ id + 'deleted';
+
+    history.pushState({db_table_id_deleted: db + table + id +'deleted'}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&deleted=True");
+
 }
 
 async function showRow(db, table, id) {
@@ -274,6 +314,30 @@ async function patchRecord(db, table, id, column) {
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column);
 }
 
+async function insertItems(db, table) {
+
+    //get table fields
+
+    //create form
+
+    //post data
+
+    let html = '<div>' + db + ' ' + table + '</div>';
+
+    html += '<form >';
+    html += '<input type="text" name="" id="" value="">';
+    html += '<input type="submit" value="">';
+    html += '</form>';
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    document.title = 'insert ' + db +' '+ table;
+
+    history.pushState({insert_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&insert=form" );
+
+
+}
 
 function landing() {
 
@@ -308,7 +372,13 @@ if (params.has('view')) {
     landing();
 }
 
-if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
+//if (params.has('insert')  && params.has('db') && params.has('table')  ) {
+
+if (params.has('insert')) {
+    db = params.get('db');
+    table = params.get('table');
+    insertItems(db, table);
+} else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
     db    = params.get('db');
     table = params.get('table');
     id    = params.get('id');
@@ -326,7 +396,8 @@ if (params.has('db') && params.has('table') && params.has('id') && params.has('c
 } else if (params.has('db')) {
     db    = params.get('db');
     showTables(db);
-}
+} 
+
 
 
 var done = performance.now() - start;
