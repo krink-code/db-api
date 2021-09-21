@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210920-4">
+    <meta name="version" content="20210921-0">
     <title></title>
 </head>
 
@@ -164,7 +164,6 @@ async function deleteItem(db, table, id) {
 
     html = JSON.stringify(response);
 
-    //html += '<hr><a href="?db='+db+'&table='+table">'+db+'  ' + table + '</a>';
     html += '<hr><a href="?db='+db+'&table='+table+'">db.table</a>';
 
     let container = document.querySelector('.container');
@@ -317,17 +316,51 @@ async function patchRecord(db, table, id, column) {
 async function insertItems(db, table) {
 
     //get table fields
-
     //create form
-
     //post data
 
-    let html = '<div>' + db + ' ' + table + '</div>';
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
 
-    html += '<form >';
-    html += '<input type="text" name="" id="" value="">';
-    html += '<input type="submit" value="">';
-    html += '</form>';
+    let fields_url = origin + '/api/' + db + '/' + table ;
+    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+    let fields = await fields_response.json();
+
+
+    const columns = [];
+    fields.forEach(item => {
+        let strArr = item.toString().split(",");
+        let field_name = strArr[0];
+        columns.push(field_name);
+    });
+    //console.log(columns);
+
+    let first_field = columns[0];
+    //console.log(first_field);
+
+        let html = '<div>'+db+'.'+table+'</div>';
+    let htmlSegment = `<div><form method="POST" action="${fields_url}">`;
+    columns.forEach(function (item, index) {
+        //console.log(item, index);
+        //let htmlSegment = `<div> ${item} </div>`;
+        htmlSegment += `<div>${item}</div>`;
+        htmlSegment += `<div><input type="text" name="${item}" id="${item}" value="${item}"></div>`;
+    });
+    htmlSegment += `<div>credentials</div>`;
+    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
+    htmlSegment += `<div><input type="submit" value="post"></div>`;
+    htmlSegment += `</form></div>`;
+
+    html += htmlSegment
+
+    //<input type="text" name="name" value="name">
+    //let html = '<div>' + db + ' ' + table + '</div>';
+    //html += '<form >';
+    //html += '<input type="text" name="" id="" value="">';
+    //html += '<input type="submit" value="Post">';
+    //html += '</form>';
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
@@ -335,7 +368,6 @@ async function insertItems(db, table) {
     document.title = 'insert ' + db +' '+ table;
 
     history.pushState({insert_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&insert=form" );
-
 
 }
 
