@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210921-3">
+    <meta name="version" content="20210922-0">
     <title></title>
 </head>
 
@@ -348,14 +348,18 @@ async function insertItems(db, table) {
         //let htmlSegment = `<div> ${item} </div>`;
         //htmlSegment += `<div>${item}</div>`;
         htmlSegment += `<div>`;
+
         htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
+        htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Enable/Disable </button>`;
+
+
         //htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" >`;
         //htmlSegment += `<input type="checkbox" name="${item}" id="${item}" value="${item}" checked >`;
         //htmlSegment += `<input type="checkbox" name="settings" id="${item}" value="${item}" >`;
 
         //htmlSegment += `<input type="checkbox" name="state" id="state" value="${item}" >`;
 
-        htmlSegment += `<input type="checkbox" name="check-${item}" id="check-${item}" value="${item}"  >`;
+        //htmlSegment += `<input type="checkbox" name="${item}" id="check-${item}" value="${item}" checked >`;
 
         //htmlSegment += `<input type="button" name="${item}" id="${item}" value="${item}" >`;
         //htmlSegment += `<label for="${item}">${item}</label>`;
@@ -374,38 +378,26 @@ async function insertItems(db, table) {
     container.innerHTML = html;
 
 
-    function disable(action, affected) {
-        //console.log('hit');
-        var elem = document.getElementById(action),
-            elemAffected = document.getElementById(affected);
-
-        if (elem.checked === false) {
-            elemAffected.disabled = true;
-        }
-        var handler = function () {
-            if (elem.checked === true) {
-                elemAffected.disabled = false;
-            } else {
-                elemAffected.disabled = true;
-            }
-        };
-        if(elem.addEventListener) elem.addEventListener('click', handler);
-        else elem.attachEvent('click', handler); // IE :(
-    }
-
-    //disable("state", "fnamex");
-    //disable("state", "id");
-
-    columns.forEach(function (item, index) {
-        //disable("state", item);
-        disable('check-'+item, item);
-    });
-
     document.title = 'insert ' + db +' '+ table;
 
     history.pushState({insert_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&insert=form" );
 
 }
+
+function toggleEnable(id) {
+    var textbox = document.getElementById(id);
+
+    if (textbox.disabled) {
+        // If disabled, do this
+        document.getElementById(id).disabled = false;
+    } else {
+        // Enter code here
+        document.getElementById(id).disabled = true;
+    }
+}
+
+// 'check-partial_sales,check-converted_sales,check-time_stamp) VALUES ('id444','...' 
+
 //http://jsfiddle.net/fernandosavio/SM8Nx/7/
 //https://jsfiddle.net/BenjaminRay/nnphq559/
 //http://jsfiddle.net/maximos/89wxX/1/
