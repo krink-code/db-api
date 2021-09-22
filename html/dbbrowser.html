@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210921-1">
+    <meta name="version" content="20210921-2">
     <title></title>
 </head>
 
@@ -313,6 +313,7 @@ async function patchRecord(db, table, id, column) {
     history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column);
 }
 
+
 async function insertItems(db, table) {
 
     //get table fields
@@ -347,8 +348,13 @@ async function insertItems(db, table) {
         //let htmlSegment = `<div> ${item} </div>`;
         //htmlSegment += `<div>${item}</div>`;
         htmlSegment += `<div>`;
-        htmlSegment += `<input type="checkbox" name="${item}" id="${item}" value="${item}" checked  >`;
-        htmlSegment += `<label for="${item}">${item}</label>`;
+        //htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
+        htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" >`;
+        //htmlSegment += `<input type="checkbox" name="${item}" id="${item}" value="${item}" checked >`;
+        //htmlSegment += `<input type="checkbox" name="${item}" id="${item}" value="${item}" >`;
+        htmlSegment += `<input type="button" name="${item}" id="${item}" value="${item}" >`;
+        //htmlSegment += `<label for="${item}">${item}</label>`;
+        //htmlSegment += `<label for="${item}">${item}</label>`;
         htmlSegment += `</div>`;
     });
     htmlSegment += `<div>credentials</div>`;
@@ -357,6 +363,13 @@ async function insertItems(db, table) {
     htmlSegment += `</form></div>`;
 
     html += htmlSegment
+
+//https://www.w3schools.com/tags/att_input_disabled.asp
+//https://www.w3schools.com/jsref/prop_checkbox_disabled.asp
+// document.getElementById("myCheck").disabled = true;
+// https://stackoverflow.com/questions/17599984/how-to-enable-a-disabled-checkbox-dynamically
+//http://jsfiddle.net/maximos/89wxX/1/
+
 
     //<input type="text" name="name" value="name">
     //let html = '<div>' + db + ' ' + table + '</div>';
@@ -368,11 +381,22 @@ async function insertItems(db, table) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    function disable() {
+        var x = document.getElementById("id");
+        alert(x.getAttribute("disabled"));
+        x.setAttribute("disabled", "true");
+        alert(x.getAttribute("disabled"));
+    }
+
+    document.getElementById("id").addEventListener("click", disable);
+
     document.title = 'insert ' + db +' '+ table;
 
     history.pushState({insert_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&insert=form" );
 
 }
+
+//http://jsfiddle.net/maximos/89wxX/1/
 
 function landing() {
 
