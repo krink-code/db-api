@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210924-1">
+    <meta name="version" content="20210924-2">
     <title></title>
 </head>
 
@@ -265,11 +265,13 @@ async function submitpatchForm(event){
 
 async function patchRecord(db, table, id, column) {
 
+    /*
     console.log('patch'); 
     console.log(db); 
     console.log(table); 
     console.log(id); 
     console.log(column);
+    */
 
     let html = '<div>' + column + '</div>';
 
@@ -406,28 +408,25 @@ async function putForm(db, table, id) {
     });
 
     let html = '<div>put '+db+'.'+table+'</div>';
-    let htmlSegment = `<div><form >`;
+    let htmlSegment = `<div><form id="formPut" >`;
 
     for(var key in dict) {
         console.log(key + " : " + dict[key]);
 
         htmlSegment += `<div>`;
-        htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" disabled >`;
+
+        htmlSegment += `<div>${key}</div>`;
+        htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" >`;
         htmlSegment += `<button type="button" onclick="toggleEnable('${key}')"> Toggle </button>`;
+
         htmlSegment += `</div>`;
 
     }
 
-
-    //columns.forEach(function (item, index) {
-    //    htmlSegment += `<div>`;
-    //    htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
-    //    htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Toggle </button>`;
-    //    htmlSegment += `</div>`;
-    //});
     htmlSegment += `<div>credentials</div>`;
     htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
     htmlSegment += `<div><input type="submit" value="put"></div>`;
+    //htmlSegment += `<div><input type="button" value="put" onclick="submitputForm()"  ></div>`;
     htmlSegment += `</form></div>`;
 
     html += htmlSegment
@@ -435,9 +434,43 @@ async function putForm(db, table, id) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
+    //document.getElementById('textbox_id').value
+    //columns.forEach(function (item, index) {
+    //    console.log('getElementById ' + item );
+    //    document.getElementById(item).value;
+    //});
+
+    //https://javascript.info/formdata
+
+    formPut.onsubmit = async (e) => {
+        e.preventDefault();
+
+        let put_url = origin + '/api/' + db + '/' + table ;
+        let response = await fetch(put_url, {
+                method: 'PUT',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Basic ' + base64
+                },
+                body: JSON.stringify(new FormData(formPut))
+        });
+        //body: new FormData(formPut)
+        let result = await response.json();
+
+        html = JSON.stringify(result);
+
+        let container = document.querySelector('.container');
+        container.innerHTML = html;
+
+        document.title = 'form put ' + db +' '+ table + ' success';
+
+        history.pushState({form_put_db_table_success: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put&success=True" );
+    };
+
     document.title = 'form put ' + db +' '+ table;
 
-    history.pushState({form_put_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&form=put" );
+    history.pushState({form_put_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put" );
 
 }
 
@@ -480,7 +513,7 @@ if (params.has('form')) {
     if (form === 'post') {
         postForm(db, table);
     } else if (form === 'put') {
-        putForm(db, table);
+        putForm(db, table, id);
     }
 
 } else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
