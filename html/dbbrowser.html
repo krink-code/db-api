@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210922-1">
+    <meta name="version" content="20210924-0">
     <title></title>
 </head>
 
@@ -124,11 +124,13 @@ async function listItems(db, table) {
     items.forEach(item => {
 
         let strArr = item.toString().split(",");
-        let _id = strArr[0];
+        //let _id = strArr[0];
+        let id = strArr[0];
 
         //let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
-        let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${_id}">${item}</a> `;
-        htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${_id}')">Delete</button> </div>`;
+        let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a> `;
+        htmlSegment    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
+        htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
         html += htmlSegment;
     });
 
@@ -300,8 +302,8 @@ async function postForm(db, table) {
         .catch(err => document.write('Request Failed ', err));
     let fields = await fields_response.json();
 
-
     const columns = [];
+
     fields.forEach(item => {
         let strArr = item.toString().split(",");
         let field_name = strArr[0];
@@ -346,6 +348,77 @@ function toggleEnable(id) {
     }
 }
 
+
+async function putForm(db, table, id) {
+
+    console.log('replace');
+    console.log('db is... ' + db);
+    console.log('table is... ' + table);
+    console.log('id is... ' + id);
+
+    /*
+      get table fields
+      get item (existing record data)
+      create form
+      put data
+    */
+
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
+    let fields_url = origin + '/api/' + db + '/' + table ;
+    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let fields = await fields_response.json();
+
+    const columns = [];
+
+    fields.forEach(item => {
+        let strArr = item.toString().split(",");
+        let field_name = strArr[0];
+        columns.push(field_name);
+    });
+
+    let first_field = columns[0];
+
+    console.log('first_field ' + first_field);
+
+    let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
+
+    let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
+        .then(handleResponse)
+        .catch(err => document.write('Request Failed ', err));
+
+    let items = await items_response.json();
+
+
+    let html = '<div>put '+db+'.'+table+'</div>';
+    let htmlSegment = `<div><form >`;
+    columns.forEach(function (item, index) {
+        htmlSegment += `<div>`;
+        htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
+        htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Toggle </button>`;
+        htmlSegment += `</div>`;
+    });
+    htmlSegment += `<div>credentials</div>`;
+    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
+    htmlSegment += `<div><input type="submit" value="put"></div>`;
+    htmlSegment += `</form></div>`;
+
+    html += htmlSegment
+
+    let container = document.querySelector('.container');
+    container.innerHTML = html;
+
+    document.title = 'form put ' + db +' '+ table;
+
+    history.pushState({form_put_db_table: db + table}, db + table, "?db=" + db + "&table=" + table + "&form=put" );
+
+}
+
+
 function landing() {
     if ( ! localStorage.getItem('base64') ) {
         Login();
@@ -378,7 +451,15 @@ if (params.has('view')) {
 if (params.has('form')) {
     db = params.get('db');
     table = params.get('table');
-    postForm(db, table);
+    id    = params.get('id');
+    form = params.get('form');
+
+    if (form === 'post') {
+        postForm(db, table);
+    } else if (form === 'put') {
+        putForm(db, table);
+    }
+
 } else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
     db    = params.get('db');
     table = params.get('table');
