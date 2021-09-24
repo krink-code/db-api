@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210924-0">
+    <meta name="version" content="20210924-1">
     <title></title>
 </head>
 
@@ -393,15 +393,38 @@ async function putForm(db, table, id) {
 
     let items = await items_response.json();
 
+    let dict = {};
+
+    count=0;
+    items.forEach(item => {
+
+        let column = columns[count];
+
+        dict[column] = item;
+
+        count++;
+    });
 
     let html = '<div>put '+db+'.'+table+'</div>';
     let htmlSegment = `<div><form >`;
-    columns.forEach(function (item, index) {
+
+    for(var key in dict) {
+        console.log(key + " : " + dict[key]);
+
         htmlSegment += `<div>`;
-        htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
-        htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Toggle </button>`;
+        htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" disabled >`;
+        htmlSegment += `<button type="button" onclick="toggleEnable('${key}')"> Toggle </button>`;
         htmlSegment += `</div>`;
-    });
+
+    }
+
+
+    //columns.forEach(function (item, index) {
+    //    htmlSegment += `<div>`;
+    //    htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
+    //    htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Toggle </button>`;
+    //    htmlSegment += `</div>`;
+    //});
     htmlSegment += `<div>credentials</div>`;
     htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
     htmlSegment += `<div><input type="submit" value="put"></div>`;
