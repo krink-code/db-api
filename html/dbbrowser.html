@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210926-1">
+    <meta name="version" content="20210926-2">
     <title></title>
 </head>
 
@@ -204,8 +204,9 @@ async function showRow(db, table, id) {
 
         let column = columns[count];
 
-        let htmlSegment = `<div>${columns[count]}</div>`;
-        htmlSegment    += `<div><input id="put_input" value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&column=${column}">edit</a> </div>`;
+        //let htmlSegment = `<div>${columns[count]}</div>`;
+        let htmlSegment = `<div>${column}</div>`;
+        htmlSegment    += `<div><input value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&column=${column}&value=${item}">edit</a> </div>`;
 
         html += htmlSegment;
         count++;
@@ -265,12 +266,15 @@ async function submitpatchForm(event){
     history.pushState({submit_patch_form_db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
 }
 
-async function patchForm(db, table, id, column) {
+async function patchForm(db, table, id, column, value) {
+
+    //console.log('patchForm');
+    //console.log(column);
 
     let html = '<div>' + column + '</div>';
 
     html += '<form onsubmit="submitpatchForm(event)">';
-    html += '<input type="text" name="' + column + '" id="patch" value="value">';
+    html += '<input type="text" name="' + column + '" id="patch" value="' + value + '">';
     html += '<input type="submit" value="patch"></form>';
 
     let container = document.querySelector('.container');
@@ -494,6 +498,7 @@ var table = params.get('table');
 var id    = params.get('id');
 var column = params.get('column');
 var form = params.get('form');
+var value = params.get('value');
 
 window.addEventListener('popstate', function (event) {
     //console.log('event popstate activated');
@@ -520,11 +525,11 @@ if (params.has('form')) {
     } else if (form === 'put') {
         putForm(db, table, id);
     } else if (form === 'patch') {
-        patchForm(db, table, id, column);
+        patchForm(db, table, id, column, value);
     }
 
-} else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
-    patchForm(db, table, id, column);
+} else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') && params.has('value') ) {
+    patchForm(db, table, id, column, value);
 
 } else if (params.has('db') && params.has('table') && params.has('id')) {
     showRow(db, table, id);
