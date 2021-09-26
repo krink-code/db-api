@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210924-2">
+    <meta name="version" content="20210926-0">
     <title></title>
 </head>
 
@@ -339,13 +339,12 @@ async function postForm(db, table) {
 }
 
 function toggleEnable(id) {
+
     var textbox = document.getElementById(id);
 
     if (textbox.disabled) {
-        // If disabled, do this
         document.getElementById(id).disabled = false;
     } else {
-        // Enter code here
         document.getElementById(id).disabled = true;
     }
 }
@@ -353,10 +352,12 @@ function toggleEnable(id) {
 
 async function putForm(db, table, id) {
 
+    /*
     console.log('replace');
     console.log('db is... ' + db);
     console.log('table is... ' + table);
     console.log('id is... ' + id);
+    */
 
     /*
       get table fields
@@ -385,7 +386,7 @@ async function putForm(db, table, id) {
 
     let first_field = columns[0];
 
-    console.log('first_field ' + first_field);
+    //console.log('first_field ' + first_field);
 
     let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
 
@@ -411,12 +412,12 @@ async function putForm(db, table, id) {
     let htmlSegment = `<div><form id="formPut" >`;
 
     for(var key in dict) {
-        console.log(key + " : " + dict[key]);
+        //console.log(key + " : " + dict[key]);
 
         htmlSegment += `<div>`;
 
         htmlSegment += `<div>${key}</div>`;
-        htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" >`;
+        htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" disabled >`;
         htmlSegment += `<button type="button" onclick="toggleEnable('${key}')"> Toggle </button>`;
 
         htmlSegment += `</div>`;
@@ -424,15 +425,19 @@ async function putForm(db, table, id) {
     }
 
     htmlSegment += `<div>credentials</div>`;
-    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
-    htmlSegment += `<div><input type="submit" value="put"></div>`;
-    //htmlSegment += `<div><input type="button" value="put" onclick="submitputForm()"  ></div>`;
+    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}" disabled ></div>`;
+
+    htmlSegment += `<div><input type="submit" name="submit" id="submit" value="put" ></div>`; //# ah, it is submitted with the other key/vals...
+
     htmlSegment += `</form></div>`;
 
     html += htmlSegment
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
+
+
+
 
     //document.getElementById('textbox_id').value
     //columns.forEach(function (item, index) {
@@ -443,7 +448,57 @@ async function putForm(db, table, id) {
     //https://javascript.info/formdata
 
     formPut.onsubmit = async (e) => {
+
         e.preventDefault();
+
+        console.log('formPut'); 
+        //formData = new FormData(formPut);
+        //console.log(formData);
+
+        //let elements = document.formPut.getElementsByTagName("");
+
+        var elements = document.getElementsByTagName("input");
+
+
+        let putDict = {};
+        for (var i = 0; i < elements.length; i++) {
+
+            //if(elements[i].value == "") {
+            //    console.log('empty');
+            //    console.log('empty ename  ' + elements[i].name);
+            //    console.log('empty evalue ' + elements[i].value);
+            //}
+
+            //console.log('ename  ' + elements[i].name);
+            //console.log('evalue ' + elements[i].value);
+
+            var textbox = document.getElementById(elements[i].name);
+
+            /*
+            if (textbox.disabled) {
+                console.log('disabled ');
+                //console.log('ename  ' + elements[i].name);
+                //console.log('evalue ' + elements[i].value);
+            } else {
+                console.log('YES name  ' + elements[i].name);
+                console.log('YES value ' + elements[i].value);
+            }
+            */
+
+            if ( ! textbox.disabled) {
+
+                if (elements[i].name == 'submit') {
+                    continue;
+                }
+                //console.log('YES name  ' + elements[i].name);
+                //console.log('YES value ' + elements[i].value);
+                putDict[elements[i].name] = elements[i].value;
+
+            }
+        }
+
+
+
 
         let put_url = origin + '/api/' + db + '/' + table ;
         let response = await fetch(put_url, {
@@ -453,19 +508,22 @@ async function putForm(db, table, id) {
                     'Content-Type': 'application/json',
                     'Authorization': 'Basic ' + base64
                 },
-                body: JSON.stringify(new FormData(formPut))
+                body: JSON.stringify(putDict)
         });
+        //body: JSON.stringify(new FormData(formPut))
         //body: new FormData(formPut)
-        let result = await response.json();
+        let result = await response.json(putDict);
 
         html = JSON.stringify(result);
 
         let container = document.querySelector('.container');
         container.innerHTML = html;
 
-        document.title = 'form put ' + db +' '+ table + ' success';
+        document.title = 'form put ' + db +' '+ table + ' done';
 
-        history.pushState({form_put_db_table_success: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put&success=True" );
+        history.pushState({form_put_db_table_success: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put&done=True" );
+        
+        console.log('hideho');
     };
 
     document.title = 'form put ' + db +' '+ table;
