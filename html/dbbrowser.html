@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210926-0">
+    <meta name="version" content="20210926-1">
     <title></title>
 </head>
 
@@ -32,7 +32,7 @@ function Login() {
    localStorage.setItem('base64', base64);
    localStorage.setItem('origin', origin);
 
-   history.pushState({view: 'login'}, "login", "?view=login");
+   history.pushState({login_view: 'login'}, "login", "?view=login");
 }
 
 function Logout() {
@@ -42,7 +42,7 @@ function Logout() {
     let html = '<a href="?">Login</a>';    
     container.innerHTML = html;
 
-    history.pushState({view: 'logout'}, "logout", "?logout=true");
+    history.pushState({logout_view: 'logout'}, "logout", "?logout=true");
 }
 
 async function showDBs() {
@@ -72,7 +72,7 @@ async function showDBs() {
 
     document.title = 'show databases';
 
-    history.pushState({view: 'dbs'}, "dbs", "?view=dbs");
+    history.pushState({show_databases_view: 'dbs'}, "dbs", "?view=dbs");
 }
 
 async function showTables(db) {
@@ -101,7 +101,7 @@ async function showTables(db) {
 
     document.title = db;
 
-    history.pushState({db: db}, db, "?db=" + db);
+    history.pushState({show_db: db}, db, "?db=" + db);
 }
 
 
@@ -124,10 +124,8 @@ async function listItems(db, table) {
     items.forEach(item => {
 
         let strArr = item.toString().split(",");
-        //let _id = strArr[0];
         let id = strArr[0];
 
-        //let htmlSegment = `<div> <button onclick="showRow('${db}', '${table}', '${_id}')">${item}</button> </div>`;
         let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a> `;
         htmlSegment    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
         htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
@@ -139,7 +137,7 @@ async function listItems(db, table) {
 
     document.title = db +' '+ table;
 
-    history.pushState({db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
+    history.pushState({list_db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
 }
 
 async function deleteItem(db, table, id) {
@@ -173,13 +171,15 @@ async function showRow(db, table, id) {
     let base64 = localStorage.getItem('base64');
 
     let fields_url = origin + '/api/' + db + '/' + table ;
+
     let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
+
     let fields = await fields_response.json();
 
-
     const columns = [];
+
     fields.forEach(item => {
         let strArr = item.toString().split(",");
         let field_name = strArr[0];
@@ -190,9 +190,11 @@ async function showRow(db, table, id) {
 
     //let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=Host' ;
     let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
+
     let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
+
     let items = await items_response.json();
 
     let html = '';
@@ -202,8 +204,8 @@ async function showRow(db, table, id) {
 
         let column = columns[count];
 
-        //let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <button onclick="patchRecord('${db}', '${table}', '${id}', '${columns[count]}')">edit</button> </div>`;
-        let htmlSegment = `<div>${columns[count]}</div><div><input value="${item}" > </input>  <a href="?db=${db}&table=${table}&id=${id}&column=${column}">edit</a> </div>`;
+        let htmlSegment = `<div>${columns[count]}</div>`;
+        htmlSegment    += `<div><input id="put_input" value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&column=${column}">edit</a> </div>`;
 
         html += htmlSegment;
         count++;
@@ -215,7 +217,7 @@ async function showRow(db, table, id) {
 
     document.title = db +' '+ table +' '+ id;
 
-    history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
+    history.pushState({showrow_db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id);
 }
 
 async function submitpatchForm(event){
@@ -260,18 +262,10 @@ async function submitpatchForm(event){
     document.title = db +' '+ table +' '+ id + ' ' + column;
 
     success = 'True';
-    history.pushState({db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
+    history.pushState({submit_patch_form_db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
 }
 
-async function patchRecord(db, table, id, column) {
-
-    /*
-    console.log('patch'); 
-    console.log(db); 
-    console.log(table); 
-    console.log(id); 
-    console.log(column);
-    */
+async function patchForm(db, table, id, column) {
 
     let html = '<div>' + column + '</div>';
 
@@ -282,9 +276,9 @@ async function patchRecord(db, table, id, column) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-    document.title = db +' '+ table +' '+ id +' ' + column;
+    document.title = 'form patch ' + db +' '+ table +' '+ id +' ' + column;
 
-    history.pushState({db_table_id: db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column);
+    history.pushState({patch_form_db_table_id: 'patch form ' + db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&form=patch");
 }
 
 async function postForm(db, table) {
@@ -351,13 +345,6 @@ function toggleEnable(id) {
 
 
 async function putForm(db, table, id) {
-
-    /*
-    console.log('replace');
-    console.log('db is... ' + db);
-    console.log('table is... ' + table);
-    console.log('id is... ' + id);
-    */
 
     /*
       get table fields
@@ -436,26 +423,11 @@ async function putForm(db, table, id) {
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-
-
-
-    //document.getElementById('textbox_id').value
-    //columns.forEach(function (item, index) {
-    //    console.log('getElementById ' + item );
-    //    document.getElementById(item).value;
-    //});
-
-    //https://javascript.info/formdata
-
     formPut.onsubmit = async (e) => {
 
         e.preventDefault();
 
         console.log('formPut'); 
-        //formData = new FormData(formPut);
-        //console.log(formData);
-
-        //let elements = document.formPut.getElementsByTagName("");
 
         var elements = document.getElementsByTagName("input");
 
@@ -463,44 +435,19 @@ async function putForm(db, table, id) {
         let putDict = {};
         for (var i = 0; i < elements.length; i++) {
 
-            //if(elements[i].value == "") {
-            //    console.log('empty');
-            //    console.log('empty ename  ' + elements[i].name);
-            //    console.log('empty evalue ' + elements[i].value);
-            //}
-
-            //console.log('ename  ' + elements[i].name);
-            //console.log('evalue ' + elements[i].value);
-
             var textbox = document.getElementById(elements[i].name);
-
-            /*
-            if (textbox.disabled) {
-                console.log('disabled ');
-                //console.log('ename  ' + elements[i].name);
-                //console.log('evalue ' + elements[i].value);
-            } else {
-                console.log('YES name  ' + elements[i].name);
-                console.log('YES value ' + elements[i].value);
-            }
-            */
 
             if ( ! textbox.disabled) {
 
                 if (elements[i].name == 'submit') {
                     continue;
                 }
-                //console.log('YES name  ' + elements[i].name);
-                //console.log('YES value ' + elements[i].value);
                 putDict[elements[i].name] = elements[i].value;
-
             }
         }
 
-
-
-
         let put_url = origin + '/api/' + db + '/' + table ;
+
         let response = await fetch(put_url, {
                 method: 'PUT',
                 mode: 'cors',
@@ -510,8 +457,7 @@ async function putForm(db, table, id) {
                 },
                 body: JSON.stringify(putDict)
         });
-        //body: JSON.stringify(new FormData(formPut))
-        //body: new FormData(formPut)
+
         let result = await response.json(putDict);
 
         html = JSON.stringify(result);
@@ -521,9 +467,8 @@ async function putForm(db, table, id) {
 
         document.title = 'form put ' + db +' '+ table + ' done';
 
-        history.pushState({form_put_db_table_success: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put&done=True" );
+        history.pushState({form_put_db_table_done_true: db + table}, db + table, "?db=" + db + "&table=" + table + "&id=" + id + "&form=put&done=True" );
         
-        console.log('hideho');
     };
 
     document.title = 'form put ' + db +' '+ table;
@@ -544,6 +489,12 @@ function landing() {
 
 var params = new URLSearchParams(window.location.search);
 
+var db = params.get('db');
+var table = params.get('table');
+var id    = params.get('id');
+var column = params.get('column');
+var form = params.get('form');
+
 window.addEventListener('popstate', function (event) {
     //console.log('event popstate activated');
     location.reload();
@@ -563,35 +514,27 @@ if (params.has('view')) {
 }
 
 if (params.has('form')) {
-    db = params.get('db');
-    table = params.get('table');
-    id    = params.get('id');
-    form = params.get('form');
 
     if (form === 'post') {
         postForm(db, table);
     } else if (form === 'put') {
         putForm(db, table, id);
+    } else if (form === 'patch') {
+        patchForm(db, table, id, column);
     }
 
 } else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') ) {
-    db    = params.get('db');
-    table = params.get('table');
-    id    = params.get('id');
-    column = params.get('column');
-    patchRecord(db, table, id, column);
+    patchForm(db, table, id, column);
+
 } else if (params.has('db') && params.has('table') && params.has('id')) {
-    db    = params.get('db');
-    table = params.get('table');
-    id    = params.get('id');
     showRow(db, table, id);
+
 } else if (params.has('db') && params.has('table')) {
-    db    = params.get('db');
-    table = params.get('table');
     listItems(db, table);
+
 } else if (params.has('db')) {
-    db    = params.get('db');
     showTables(db);
+
 } 
 
 var done = performance.now() - start;
