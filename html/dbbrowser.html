@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210926-2">
+    <meta name="version" content="20210926-3">
     <title></title>
 </head>
 
@@ -128,7 +128,8 @@ async function listItems(db, table) {
 
         let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a> `;
         htmlSegment    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
-        htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
+        //htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
+        htmlSegment    += `<button onclick="questiondeleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
         html += htmlSegment;
     });
 
@@ -138,6 +139,28 @@ async function listItems(db, table) {
     document.title = db +' '+ table;
 
     history.pushState({list_db_table: db + table}, db + table, "?db=" + db + "&table=" + table);
+}
+
+async function questiondeleteItem(db, table, id) {
+
+    let question = window.prompt("Are you sure?  Please type " + id );
+
+    if (question === id) {
+        console.log('delete ' + id );
+        deleteItem(db, table, id);
+    } else {
+
+        let html = '<div>Bail</div>';
+
+        let container = document.querySelector('.container');
+
+        container.innerHTML = html;
+
+        document.title = 'Bail ' + db + ' ' + table + ' ' + id ;
+
+        history.pushState({bail_db_table_id: 'bail'+db+table+id}, db, "?db=" + db + "&table=" + table + "&id=" + id + "&bail=True");
+    }
+
 }
 
 async function deleteItem(db, table, id) {
@@ -262,14 +285,10 @@ async function submitpatchForm(event){
 
     document.title = db +' '+ table +' '+ id + ' ' + column;
 
-    success = 'True';
-    history.pushState({submit_patch_form_db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=" + success);
+    history.pushState({submit_patch_form_db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=True");
 }
 
 async function patchForm(db, table, id, column, value) {
-
-    //console.log('patchForm');
-    //console.log(column);
 
     let html = '<div>' + column + '</div>';
 
@@ -317,7 +336,7 @@ async function postForm(db, table) {
     columns.forEach(function (item, index) {
         htmlSegment += `<div>`;
         htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
-        htmlSegment += `<button type="button" onclick="toggleEnable('${item}')"> Enable/Disable </button>`;
+        htmlSegment += `<button type="button" onclick="toggleEnable('${item}')">Toggle</button>`;
         htmlSegment += `</div>`;
     });
     htmlSegment += `<div>credentials</div>`;
@@ -409,7 +428,7 @@ async function putForm(db, table, id) {
 
         htmlSegment += `<div>${key}</div>`;
         htmlSegment += `<input type="text" name="${key}" id="${key}" value="${dict[key]}" disabled >`;
-        htmlSegment += `<button type="button" onclick="toggleEnable('${key}')"> Toggle </button>`;
+        htmlSegment += `<button type="button" onclick="toggleEnable('${key}')">Toggle</button>`;
 
         htmlSegment += `</div>`;
 
