@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210926-3">
+    <meta name="version" content="20210927-1">
     <title></title>
 </head>
 
@@ -45,6 +45,22 @@ function Logout() {
     history.pushState({logout_view: 'logout'}, "logout", "?logout=true");
 }
 
+function showInfo() {
+
+    let origin = localStorage.getItem('origin');
+    let base64 = localStorage.getItem('base64');
+
+    let container = document.querySelector('.container');
+
+    let html = ''
+        html += '<div>url<input type="text" value="'+origin+'" disabled ></div>'; 
+        html += '<div>credentials<input type="password" value="'+base64+'" disabled ></div>'; 
+
+    container.innerHTML = html;
+
+    history.pushState({showInfo: 'info'}, "info", "?view=info");
+}
+
 async function showDBs() {
 
     let origin = localStorage.getItem('origin');
@@ -65,7 +81,8 @@ async function showDBs() {
         html += htmlSegment;
     });    
 
-    html += '<hr><div><button onclick="localStorage.clear();location.reload();">Logout</button></div>';
+    html += '<hr><div><button onclick="showInfo();">Info</button>';
+    html += '<button onclick="localStorage.clear();location.reload();">Logout</button></div>';
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
@@ -518,6 +535,7 @@ var id    = params.get('id');
 var column = params.get('column');
 var form = params.get('form');
 var value = params.get('value');
+var view = params.get('view');
 
 window.addEventListener('popstate', function (event) {
     //console.log('event popstate activated');
@@ -533,8 +551,12 @@ if (params.has('logout')) {
 }
 
 if (params.has('view')) {
-    view = params.get('view');
-    landing();
+
+    if (view === 'info') {
+        showInfo();
+    } else {
+        landing();
+    }
 }
 
 if (params.has('form')) {
