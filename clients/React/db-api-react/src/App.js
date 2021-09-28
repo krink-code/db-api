@@ -1,5 +1,5 @@
 
-/*
+/* src/App.js
  *
  * React application using the fetch API to send a GET request to consume JSON data from a third-party REST API in the componendDidMount() life-cycle method.
  * uses the state object to hold the fetched JSON data and the setState() method to set the state.
@@ -8,7 +8,7 @@
 
 import React, { Component } from 'react';
 
-const url = 'http://127.0.0.1:8980';
+const url = 'http://127.0.0.1:8980/api';
 const base64 = '';
 
 class App extends Component {
@@ -31,9 +31,7 @@ class App extends Component {
   render() {
 
     return (
-
        <div className="container">
-
         <h1>Show Databases</h1>
 
         {this.state.items.map((item) => (
@@ -41,12 +39,10 @@ class App extends Component {
         ))}
 
        </div>
-
     );
   }
 
 }
 
 export default App;
-
 

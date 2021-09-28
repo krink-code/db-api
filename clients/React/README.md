@@ -6,7 +6,7 @@ https://developer.mozilla.org/en-US/docs/Learn/Tools_and_testing/Client-side_Jav
 created via create-react-app CLI 
 
 ```
-npx create-react-app db-browser
+npx create-react-app db-api-react
 ```
 
 https://create-react-app.dev/
@@ -32,12 +32,9 @@ Inside that directory, you can run several commands:
 
 We suggest that you begin by typing:
 
-  cd db-browser
+  cd db-api-react
   npm start
 
 ```
-
-
-
 
 
