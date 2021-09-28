@@ -14,7 +14,7 @@ https://create-react-app.dev/
 ```
 Run `npm audit` for details.
 
-Success! Created db-api at /Users/krink/db-api/clients/React/db-api
+Success! Created db-api-react at /Users/krink/db-api/clients/ReactJS/db-api-react
 Inside that directory, you can run several commands:
 
   npm start
