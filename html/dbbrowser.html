@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210927-2">
+    <meta name="version" content="20210929-0">
     <title></title>
 </head>
 
@@ -14,11 +14,11 @@
 <script type="text/javascript">
 
 /* 
-  SPA (Single-page application)
-  https://developer.mozilla.org/en-US/docs/Glossary/SPA 
-*/
+ * SPA (Single-page application)
+ * https://developer.mozilla.org/en-US/docs/Glossary/SPA 
+ */
 
-var start = performance.now();
+const start = performance.now();
 
 async function handleResponse(response) {
     if (!response.ok) {
@@ -29,13 +29,13 @@ async function handleResponse(response) {
 }
 
 function Login() {
-   let origin = window.prompt("url: ", 'http://127.0.0.1:8980');
-   let user = window.prompt("username: ");
-   let pass = window.prompt("password: ");
-   let base64 = btoa(user + ':' + pass);
+   let login_origin = window.prompt("url: ", 'http://127.0.0.1:8980');
+   let login_user = window.prompt("username: ");
+   let login_pass = window.prompt("password: ");
+   let login_base64 = btoa(login_user + ':' + login_pass);
 
-   localStorage.setItem('base64', base64);
-   localStorage.setItem('origin', origin);
+   localStorage.setItem('base64', login_base64);
+   localStorage.setItem('origin', login_origin);
 
    history.pushState({login_view: 'login'}, "login", "?view=login");
 }
@@ -90,6 +90,7 @@ async function showDBs() {
     html += '<button onclick="localStorage.clear();location.reload();">Logout</button></div>';
 
     let container = document.querySelector('.container');
+
     container.innerHTML = html;
 
     document.title = 'show databases';
@@ -379,7 +380,7 @@ async function postForm(db, table) {
 
 function toggleEnable(id) {
 
-    var textbox = document.getElementById(id);
+    let textbox = document.getElementById(id);
 
     if (textbox.disabled) {
         document.getElementById(id).disabled = false;
@@ -443,7 +444,7 @@ async function putForm(db, table, id) {
     let html = '<div>put '+db+'.'+table+'</div>';
     let htmlSegment = `<div><form id="formPut" >`;
 
-    for(var key in dict) {
+    for(let key in dict) {
         //console.log(key + " : " + dict[key]);
 
         htmlSegment += `<div>`;
@@ -474,13 +475,13 @@ async function putForm(db, table, id) {
 
         console.log('formPut'); 
 
-        var elements = document.getElementsByTagName("input");
+        let elements = document.getElementsByTagName("input");
 
 
         let putDict = {};
-        for (var i = 0; i < elements.length; i++) {
+        for (let i = 0; i < elements.length; i++) {
 
-            var textbox = document.getElementById(elements[i].name);
+            let textbox = document.getElementById(elements[i].name);
 
             if ( ! textbox.disabled) {
 
@@ -530,65 +531,74 @@ function landing() {
     showDBs();
 }
 
-/* main */
+function router() {
 
-var params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(window.location.search);
 
-var db = params.get('db');
-var table = params.get('table');
-var id    = params.get('id');
-var column = params.get('column');
-var form = params.get('form');
-var value = params.get('value');
-var view = params.get('view');
+    const db = params.get('db');
+    const table = params.get('table');
+    const id    = params.get('id');
+    const column = params.get('column');
+    const form = params.get('form');
+    const value = params.get('value');
+    const view = params.get('view');
+
+    if ( ! params.toString()) {
+        return landing();
+    }
+
+    if (params.has('logout')) {
+       return Logout();
+    }
+
+    if (params.has('view')) {
+
+        if (view === 'info') {
+            return showInfo();
+
+        } else {
+            return landing();
+        }
+    }
+
+    if (params.has('form')) {
+
+        if (form === 'post') {
+            return postForm(db, table);
+
+        } else if (form === 'put') {
+            return putForm(db, table, id);
+
+        } else if (form === 'patch') {
+            return patchForm(db, table, id, column, value);
+
+        }
+
+    } else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') && params.has('value') ) {
+        return patchForm(db, table, id, column, value);
+
+    } else if (params.has('db') && params.has('table') && params.has('id')) {
+        return showRow(db, table, id);
+
+    } else if (params.has('db') && params.has('table')) {
+        return listItems(db, table);
+
+    } else if (params.has('db')) {
+        return showTables(db);
+
+    } 
+
+    return landing();
+}
 
 window.addEventListener('popstate', function (event) {
-    //console.log('event popstate activated');
-    location.reload();
+    console.log('event popstate activated');
+    //location.reload();
 });
 
-if (!params.toString()) {
-    landing();
-}
+let run = router();
 
-if (params.has('logout')) {
-   Logout();
-}
-
-if (params.has('view')) {
-
-    if (view === 'info') {
-        showInfo();
-    } else {
-        landing();
-    }
-}
-
-if (params.has('form')) {
-
-    if (form === 'post') {
-        postForm(db, table);
-    } else if (form === 'put') {
-        putForm(db, table, id);
-    } else if (form === 'patch') {
-        patchForm(db, table, id, column, value);
-    }
-
-} else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') && params.has('value') ) {
-    patchForm(db, table, id, column, value);
-
-} else if (params.has('db') && params.has('table') && params.has('id')) {
-    showRow(db, table, id);
-
-} else if (params.has('db') && params.has('table')) {
-    listItems(db, table);
-
-} else if (params.has('db')) {
-    showTables(db);
-
-} 
-
-var done = performance.now() - start;
+const done = performance.now() - start;
 console.log('done ' + done);
 
 </script>
