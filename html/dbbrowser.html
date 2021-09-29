@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210929-0">
+    <meta name="version" content="20210929-1">
     <title></title>
 </head>
 
@@ -523,25 +523,14 @@ async function putForm(db, table, id) {
 
 }
 
-
 function landing() {
     if ( ! localStorage.getItem('base64') ) {
-        Login();
+        return Login();
     }
-    showDBs();
+    return showDBs();
 }
 
 function router() {
-
-    const params = new URLSearchParams(window.location.search);
-
-    const db = params.get('db');
-    const table = params.get('table');
-    const id    = params.get('id');
-    const column = params.get('column');
-    const form = params.get('form');
-    const value = params.get('value');
-    const view = params.get('view');
 
     if ( ! params.toString()) {
         return landing();
@@ -595,6 +584,16 @@ window.addEventListener('popstate', function (event) {
     console.log('event popstate activated');
     //location.reload();
 });
+
+const params = new URLSearchParams(window.location.search);
+
+const db = params.get('db');
+const table = params.get('table');
+const id    = params.get('id');
+const column = params.get('column');
+const form = params.get('form');
+const value = params.get('value');
+const view = params.get('view');
 
 let run = router();
 
