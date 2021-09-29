@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210929-2">
+    <meta name="version" content="20210929-3">
     <title></title>
 </head>
 
@@ -344,24 +344,43 @@ async function postForm(db, table) {
         .catch(err => document.write('Request Failed ', err));
     let fields = await fields_response.json();
 
-    const columns = [];
+    const columns = {};
 
     fields.forEach(item => {
-        let strArr = item.toString().split(",");
-        let field_name = strArr[0];
-        columns.push(field_name);
-    });
 
-    let first_field = columns[0];
+        let strArr = item.toString().split(",");
+
+        let field_name = strArr[0];
+        let field_type = strArr[1];
+        let field_null = strArr[2];
+        let field_key  = strArr[3];
+        let field_default = strArr[4];
+        let field_extra = strArr[5];
+
+        let disabled = '';
+
+        if (field_extra === 'auto_increment') {
+            disabled = 'disabled';
+        }
+
+        if (field_default === 'current_timestamp()') {
+            disabled = 'disabled';
+        } 
+
+        columns[field_name] = disabled;
+
+    });
 
     let html = '<div>'+db+'.'+table+'</div>';
     let htmlSegment = `<div><form method="POST" action="${fields_url}">`;
-    columns.forEach(function (item, index) {
+
+    for (const [item, val] of Object.entries(columns)) {
         htmlSegment += `<div>`;
-        htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" disabled >`;
+        htmlSegment += `<input type="text" name="${item}" id="${item}" value="${item}" ${val} >`;
         htmlSegment += `<button type="button" onclick="toggleEnable('${item}')">Toggle</button>`;
         htmlSegment += `</div>`;
-    });
+    }
+
     htmlSegment += `<div>credentials</div>`;
     htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
     htmlSegment += `<div><input type="submit" value="post"></div>`;
@@ -419,8 +438,6 @@ async function putForm(db, table, id) {
 
     let first_field = columns[0];
 
-    //console.log('first_field ' + first_field);
-
     let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
 
     let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
@@ -445,7 +462,6 @@ async function putForm(db, table, id) {
     let htmlSegment = `<div><form id="formPut" >`;
 
     for(let key in dict) {
-        //console.log(key + " : " + dict[key]);
 
         htmlSegment += `<div>`;
 
@@ -460,7 +476,7 @@ async function putForm(db, table, id) {
     htmlSegment += `<div>credentials</div>`;
     htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}" disabled ></div>`;
 
-    htmlSegment += `<div><input type="submit" name="submit" id="submit" value="put" ></div>`; //# ah, it is submitted with the other key/vals...
+    htmlSegment += `<div><input type="submit" name="submit" id="submit" value="put" ></div>`;
 
     htmlSegment += `</form></div>`;
 
@@ -476,7 +492,6 @@ async function putForm(db, table, id) {
         console.log('formPut'); 
 
         let elements = document.getElementsByTagName("input");
-
 
         let putDict = {};
         for (let i = 0; i < elements.length; i++) {
