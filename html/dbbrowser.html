@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210929-1">
+    <meta name="version" content="20210929-2">
     <title></title>
 </head>
 
@@ -525,9 +525,9 @@ async function putForm(db, table, id) {
 
 function landing() {
     if ( ! localStorage.getItem('base64') ) {
-        return Login();
+        Login();
     }
-    return showDBs();
+    showDBs();
 }
 
 function router() {
