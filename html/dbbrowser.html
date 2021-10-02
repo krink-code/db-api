@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20210929-3">
+    <meta name="version" content="20211002-1">
     <title></title>
 </head>
 
@@ -224,15 +224,16 @@ async function showRow(db, table, id) {
 
     let fields = await fields_response.json();
 
-    const columns = [];
+    //const columns = [];
+    const fieldList = [];
 
     fields.forEach(item => {
         let strArr = item.toString().split(",");
         let field_name = strArr[0];
-        columns.push(field_name);
+        fieldList.push(field_name);
     });
 
-    let first_field = columns[0];
+    let first_field = fieldList[0];
 
     //let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=Host' ;
     let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
@@ -248,11 +249,12 @@ async function showRow(db, table, id) {
 
     items.forEach(item => {
 
-        let column = columns[count];
+        //let column = columns[count];
+        let item_field = fieldList[count];
 
         //let htmlSegment = `<div>${columns[count]}</div>`;
-        let htmlSegment = `<div>${column}</div>`;
-        htmlSegment    += `<div><input value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&column=${column}&value=${item}">edit</a> </div>`;
+        let htmlSegment = `<div>${item_field}</div>`;
+        htmlSegment    += `<div><input value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&field=${item_field}&column=${first_field}&value=${item}">edit</a> </div>`;
 
         html += htmlSegment;
         count++;
@@ -274,15 +276,16 @@ async function submitpatchForm(event){
 
     event.preventDefault();
 
-    let column = document.getElementById('patch').name;
+    let key_ = document.getElementById('patch').name;
 
-    let value = event.target[column].value;
+    let val_ = event.target[key_].value;
 
-    let strTxt = '{ "' + column + '" : "' + value + '" }';
+    let strTxt = '{ "' + key_ + '" : "' + val_ + '" }';
 
     const data = JSON.parse(strTxt);
 
-    let url = origin + '/api/' + db + '/' + table + '/' + id ;
+    //let url = origin + '/api/' + db + '/' + table + '/' + id ;
+    let url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + column ;
 
     let patch = await fetch(url, {
                                method: 'PATCH',
@@ -311,20 +314,20 @@ async function submitpatchForm(event){
     history.pushState({submit_patch_form_db_table_id_column: db + table + id + column}, db + table + id + column, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&patch=True");
 }
 
-async function patchForm(db, table, id, column, value) {
+async function patchForm(db, table, id, field, value) {
 
-    let html = '<div>' + column + '</div>';
+    let html = '<div>' + field + '</div>';
 
     html += '<form onsubmit="submitpatchForm(event)">';
-    html += '<input type="text" name="' + column + '" id="patch" value="' + value + '">';
+    html += '<input type="text" name="' + field + '" id="patch" value="' + value + '">';
     html += '<input type="submit" value="patch"></form>';
 
     let container = document.querySelector('.container');
     container.innerHTML = html;
 
-    document.title = 'form patch ' + db +' '+ table +' '+ id +' ' + column;
+    document.title = 'form patch ' + db +' '+ table +' '+ id +' ' + field ;
 
-    history.pushState({patch_form_db_table_id: 'patch form ' + db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&column=" + column + "&form=patch");
+    history.pushState({patch_form_db_table_id: 'patch form ' + db + table + id}, db + table + id, "?db=" + db + "&table=" + table + "&id=" + id + "&field=" + field + "&form=patch");
 }
 
 async function postForm(db, table) {
@@ -574,12 +577,12 @@ function router() {
             return putForm(db, table, id);
 
         } else if (form === 'patch') {
-            return patchForm(db, table, id, column, value);
+            return patchForm(db, table, id, field, value);
 
         }
 
-    } else if (params.has('db') && params.has('table') && params.has('id') && params.has('column') && params.has('value') ) {
-        return patchForm(db, table, id, column, value);
+    } else if (params.has('db') && params.has('table') && params.has('id') && params.has('field') && params.has('value') ) {
+        return patchForm(db, table, id, field, value);
 
     } else if (params.has('db') && params.has('table') && params.has('id')) {
         return showRow(db, table, id);
@@ -605,6 +608,7 @@ const params = new URLSearchParams(window.location.search);
 const db = params.get('db');
 const table = params.get('table');
 const id    = params.get('id');
+const field = params.get('field');
 const column = params.get('column');
 const form = params.get('form');
 const value = params.get('value');
