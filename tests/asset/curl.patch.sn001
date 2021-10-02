@@ -1,0 +1,9 @@
+
+curl --user dbuser:dbpass \
+     -X PATCH  \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json"  \
+     -d '{"name": "New Name"}' \
+    "http://127.0.0.1:8980/api/asset/inventory/sn001?column=sn"
+
+
