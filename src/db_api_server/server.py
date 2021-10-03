@@ -1,12 +1,16 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.2'
+__version__='1.0.3'
 
 from flask import Flask
 
 from flask import request
 from flask import jsonify
+
+import flask.json
+import decimal
+
 from werkzeug.exceptions import HTTPException
 
 from flask_cors import CORS
@@ -15,8 +19,18 @@ import mysql.connector
 
 import base64
 
+class AppJSONEncoder(flask.json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, decimal.Decimal):
+            # Convert decimal instance to string
+            return str(obj)
+        return super(AppJSONEncoder, self).default(obj)
+
+
 app = Flask(__name__)
 CORS(app, support_credentials=True)
+
+app.json_encoder = AppJSONEncoder
 
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
 app.config['JSON_SORT_KEYS'] = True                 #default True
@@ -343,8 +357,6 @@ def sqlConnection(user=None, password=None):
         password = request.authorization.password
 
     config = {
-        #'user':                   request.authorization.username,
-        #'password':               request.authorization.password,
         'user':                   user,
         'password':               password,
         'host':                   request.headers.get('X-Host', '127.0.0.1'),
