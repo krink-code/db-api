@@ -3,7 +3,7 @@
 
 import mysql.connector
 
-picture = 'image.jpg'
+picture = 'image.png'
 
 with open(picture, 'rb') as f:
     photo = f.read()
