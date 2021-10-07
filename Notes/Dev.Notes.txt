@@ -1,0 +1,19 @@
+
+MariaDB [(none)]> SELECT update_time from information_schema.tables WHERE table_schema='tcp' AND table_name='partners';
++---------------------+
+| update_time         |
++---------------------+
+| 2021-10-06 16:34:08 |
++---------------------+
+1 row in set (0.000 sec)
+
+can be use to ping a table if it has changed
+
+
+```
+SELECT table_schema,table_name,update_time
+FROM information_schema.tables
+WHERE update_time > (NOW() - INTERVAL 5 MINUTE);
+```
+
+
