@@ -16,4 +16,12 @@ FROM information_schema.tables
 WHERE update_time > (NOW() - INTERVAL 5 MINUTE);
 ```
 
+curl --user dbuser:dbpass "http://127.0.0.1:8980/api/information_schema/tables/table1?column=TABLE_NAME&fields=TABLE_SCHEMA,TABLE_NAME,UPDATE_TIME"
+
+select TABLE_SCHEMA,TABLE_NAME,UPDATE_TIME from information_schema.tables where TABLE_NAME='table1';
+
+# note that it'd be better to have table name AND database name example, as it is possible to have more than one table with this name.  
+#      yet it works...  just account for possible multiples.
+#
+# and make me think perhaps adding to the api ?where= and or
 
