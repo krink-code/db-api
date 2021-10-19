@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20211002-1">
+    <meta name="version" content="20211018-0">
     <title></title>
 </head>
 
@@ -43,7 +43,6 @@ function Login() {
 function Logout() {
     localStorage.clear();
 
-    let container = document.querySelector('.container');
     let html = '<a href="?">Login</a>';    
     container.innerHTML = html;
 
@@ -52,32 +51,62 @@ function Logout() {
 
 function showInfo() {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
+    let html = '';
 
-    let container = document.querySelector('.container');
+    for (const a in localStorage) {
+        console.log(a, ' = ', localStorage[a]);
+        html += '<div>' + a + '<input type="text" value="'+ localStorage[a] +'" disabled ></div>'; 
+    }
 
-    let html = ''
-        html += '<div>url<input type="text" value="'+origin+'" disabled ></div>'; 
-        html += '<div>credentials<input type="password" value="'+base64+'" disabled ></div>'; 
+    //<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>
+    html += '<div><button onclick="return addLocalStore();">Add Item</button></div>';
 
     container.innerHTML = html;
 
     history.pushState({showInfo: 'info'}, "info", "?view=info");
 }
 
+function addLocalStore() {
+   const item_name  = window.prompt("name: ");
+   const item_value = window.prompt("value: ");
+
+   localStorage.setItem(item_name, item_value);
+
+   history.pushState({addLocalStore: 'addLocalStore'}, "addLocalStore", "?view=info");
+}
+
+
 async function showDBs() {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
+    const url = origin + '/api';
 
-    let url = origin + '/api';
+    let html_footer = '<div><button onclick="showInfo();location.reload();">Info</button></div>';
+    html_footer    += '<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>';
 
-    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+    const options = {};
+
+    const arrayLength = db_api_options.length;
+    //console.log(arrayLength);
+    for (let i = 0; i < arrayLength; i++) {
+        const v = localStorage.getItem(db_api_options[i]);
+        //console.log('v ' + v);
+        // if not null, use it
+        if (v) {
+            //console.log(db_api_options[i] + ' ' + v);
+            options[ db_api_options[i] ] = v;
+        }
+
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    //let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64, 'X-Host': '192.168.1.197'}})
+    const response = await fetch(url,  {headers: options})
         .then(handleResponse)
-        .catch(err => document.write('Request Failed ', err + '<div><button onclick="localStorage.clear();location.reload();">clear</button></div>'));
+        .catch(err => document.write('Request Failed ', err + html_footer));
+        //.catch(err => document.write('Request Failed ', err + '<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>'));
 
-    let items = await response.json();
+    const items = await response.json();
 
     let html = '';
     items.forEach(item => {
@@ -89,8 +118,6 @@ async function showDBs() {
     html += '<hr><div><button onclick="showInfo();">Info</button>';
     html += '<button onclick="localStorage.clear();location.reload();">Logout</button></div>';
 
-    let container = document.querySelector('.container');
-
     container.innerHTML = html;
 
     document.title = 'show databases';
@@ -100,17 +127,25 @@ async function showDBs() {
 
 async function showTables(db) {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
+    const url = origin + '/api/' + db ;
 
-    let url = origin + '/api/' + db ;
+    const options = {};
 
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
 
-    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+    options['Authorization'] = 'Basic ' + base64;
+
+    const response = await fetch(url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let items = await response.json();
+    const items = await response.json();
 
     let html = '';
     items.forEach(item => {
@@ -119,7 +154,6 @@ async function showTables(db) {
         html += htmlSegment;
     });
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = db;
@@ -130,18 +164,26 @@ async function showTables(db) {
 
 async function listItems(db, table) {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
-
     //let url = origin + '/api/' + db + '/' + table + "?limit=100" ;
-    let url = origin + '/api/' + db + '/' + table + "?query=true" ;
+    const url = origin + '/api/' + db + '/' + table + "?query=true" ;
 
+    const options = {};
 
-    let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64}})
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    const response = await fetch(url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let items = await response.json();
+    const items = await response.json();
 
     let html = '';
     items.forEach(item => {
@@ -156,7 +198,6 @@ async function listItems(db, table) {
         html += htmlSegment;
     });
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = db +' '+ table;
@@ -166,7 +207,7 @@ async function listItems(db, table) {
 
 async function questiondeleteItem(db, table, id) {
 
-    let question = window.prompt("Are you sure?  Please type " + id );
+    const question = window.prompt("Are you sure?  Please type " + id );
 
     if (question === id) {
         console.log('delete ' + id );
@@ -174,8 +215,6 @@ async function questiondeleteItem(db, table, id) {
     } else {
 
         let html = '<div>Bail</div>';
-
-        let container = document.querySelector('.container');
 
         container.innerHTML = html;
 
@@ -188,22 +227,31 @@ async function questiondeleteItem(db, table, id) {
 
 async function deleteItem(db, table, id) {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
-
     //let url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
-    let url = origin + '/api/' + db + '/' + table + '/' + id  ;
-    let delete_response = await fetch(url, {method:'DELETE',headers:{Authorization: 'Basic ' + base64}})
+    const url = origin + '/api/' + db + '/' + table + '/' + id  ;
+
+    const options = {};
+
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    const response = await fetch(url,  {method:'DELETE', headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let response = await delete_response.json();
+    const json = await response.json();
 
-    html = JSON.stringify(response);
+    html = JSON.stringify(json);
 
     html += '<hr><a href="?db='+db+'&table='+table+'">db.table</a>';
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = db +' '+ table +' '+ id + 'deleted';
@@ -213,16 +261,25 @@ async function deleteItem(db, table, id) {
 
 async function showRow(db, table, id) {
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
+    const url = origin + '/api/' + db + '/' + table ;
 
-    let fields_url = origin + '/api/' + db + '/' + table ;
+    const options = {};
 
-    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    const fields_response = await fetch(url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let fields = await fields_response.json();
+    const fields = await fields_response.json();
 
     //const columns = [];
     const fieldList = [];
@@ -233,12 +290,12 @@ async function showRow(db, table, id) {
         fieldList.push(field_name);
     });
 
-    let first_field = fieldList[0];
+    const first_field = fieldList[0];
 
     //let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=Host' ;
-    let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
+    const items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
 
-    let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
+    const items_response = await fetch(url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
@@ -261,7 +318,6 @@ async function showRow(db, table, id) {
     });
 
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = db +' '+ table +' '+ id;
@@ -271,42 +327,48 @@ async function showRow(db, table, id) {
 
 async function submitpatchForm(event){
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
-
     event.preventDefault();
 
-    let key_ = document.getElementById('patch').name;
+    const key_ = document.getElementById('patch').name;
 
-    let val_ = event.target[key_].value;
+    const val_ = event.target[key_].value;
 
-    let strTxt = '{ "' + key_ + '" : "' + val_ + '" }';
+    const strTxt = '{ "' + key_ + '" : "' + val_ + '" }';
 
     const data = JSON.parse(strTxt);
 
     //let url = origin + '/api/' + db + '/' + table + '/' + id ;
-    let url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + column ;
+    const url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + column ;
 
-    let patch = await fetch(url, {
+    const options = {};
+
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+    options['Content-Type'] = 'application/json';
+    options['Accept'] = 'application/json';
+
+    const patch = await fetch(url, {
                                method: 'PATCH',
                                mode: 'cors',
-                               headers: {
-                                   'Content-Type': 'application/json',
-                                   'Accept': 'application/json',
-                                   'Authorization': 'Basic ' + base64
-                               },
+                               headers: options,
                                body: JSON.stringify(data)
                                })
                           .then(handleResponse)
                           .catch(err => document.write('Request Failed ', err));
 
-    let response = await patch.json();
+    const response = await patch.json();
 
     html = JSON.stringify(response);
 
     html += '<hr><a href="?db='+db+'&table='+table+'&id='+id+'">'+id+'</a>';
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = db +' '+ table +' '+ id + ' ' + column;
@@ -322,7 +384,6 @@ async function patchForm(db, table, id, field, value) {
     html += '<input type="text" name="' + field + '" id="patch" value="' + value + '">';
     html += '<input type="submit" value="patch"></form>';
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = 'form patch ' + db +' '+ table +' '+ id +' ' + field ;
@@ -338,14 +399,24 @@ async function postForm(db, table) {
       post data
     */
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
+    const fields_url = origin + '/api/' + db + '/' + table ;
 
-    let fields_url = origin + '/api/' + db + '/' + table ;
-    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
+    const options = {};
+
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    const fields_response = await fetch(fields_url, {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
-    let fields = await fields_response.json();
+    const fields = await fields_response.json();
 
     const columns = {};
 
@@ -391,7 +462,6 @@ async function postForm(db, table) {
 
     html += htmlSegment
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     document.title = 'form post ' + db +' '+ table;
@@ -402,7 +472,7 @@ async function postForm(db, table) {
 
 function toggleEnable(id) {
 
-    let textbox = document.getElementById(id);
+    const textbox = document.getElementById(id);
 
     if (textbox.disabled) {
         document.getElementById(id).disabled = false;
@@ -421,15 +491,25 @@ async function putForm(db, table, id) {
       put data
     */
 
-    let origin = localStorage.getItem('origin');
-    let base64 = localStorage.getItem('base64');
-
     let fields_url = origin + '/api/' + db + '/' + table ;
-    let fields_response = await fetch(fields_url, {headers:{Authorization: 'Basic ' + base64}})
+
+    const options = {};
+
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+
+    options['Authorization'] = 'Basic ' + base64;
+
+    const fields_response = await fetch(fields_url, {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let fields = await fields_response.json();
+    const fields = await fields_response.json();
 
     const columns = [];
 
@@ -439,22 +519,22 @@ async function putForm(db, table, id) {
         columns.push(field_name);
     });
 
-    let first_field = columns[0];
+    const first_field = columns[0];
 
-    let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
+    const items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
 
-    let items_response = await fetch(items_url, {headers:{Authorization: 'Basic ' + base64}})
+    const items_response = await fetch(items_url, {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
-    let items = await items_response.json();
+    const items = await items_response.json();
 
-    let dict = {};
+    const dict = {};
 
     count=0;
     items.forEach(item => {
 
-        let column = columns[count];
+        const column = columns[count];
 
         dict[column] = item;
 
@@ -464,7 +544,7 @@ async function putForm(db, table, id) {
     let html = '<div>put '+db+'.'+table+'</div>';
     let htmlSegment = `<div><form id="formPut" >`;
 
-    for(let key in dict) {
+    for(const key in dict) {
 
         htmlSegment += `<div>`;
 
@@ -485,7 +565,6 @@ async function putForm(db, table, id) {
 
     html += htmlSegment
 
-    let container = document.querySelector('.container');
     container.innerHTML = html;
 
     formPut.onsubmit = async (e) => {
@@ -494,12 +573,12 @@ async function putForm(db, table, id) {
 
         console.log('formPut'); 
 
-        let elements = document.getElementsByTagName("input");
+        const elements = document.getElementsByTagName("input");
 
-        let putDict = {};
-        for (let i = 0; i < elements.length; i++) {
+        const putDict = {};
+        for (const i = 0; i < elements.length; i++) {
 
-            let textbox = document.getElementById(elements[i].name);
+            const textbox = document.getElementById(elements[i].name);
 
             if ( ! textbox.disabled) {
 
@@ -510,23 +589,19 @@ async function putForm(db, table, id) {
             }
         }
 
-        let put_url = origin + '/api/' + db + '/' + table ;
+        const put_url = origin + '/api/' + db + '/' + table ;
 
-        let response = await fetch(put_url, {
+        const response = await fetch(put_url, {
                 method: 'PUT',
                 mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Basic ' + base64
-                },
+                headers: options,
                 body: JSON.stringify(putDict)
         });
 
-        let result = await response.json(putDict);
+        const result = await response.json(putDict);
 
-        html = JSON.stringify(result);
+        let html = JSON.stringify(result);
 
-        let container = document.querySelector('.container');
         container.innerHTML = html;
 
         document.title = 'form put ' + db +' '+ table + ' done';
@@ -603,16 +678,30 @@ window.addEventListener('popstate', function (event) {
     //location.reload();
 });
 
+//-----------------------------------------------------------
+
+// specific to the api
+
+const db_api_options = [ 'X-Host', 'X-Port' ];
+
+
+//-----------------------------------------------------------
+
 const params = new URLSearchParams(window.location.search);
 
-const db = params.get('db');
-const table = params.get('table');
-const id    = params.get('id');
-const field = params.get('field');
+const db     = params.get('db');
+const table  = params.get('table');
+const id     = params.get('id');
+const field  = params.get('field');
 const column = params.get('column');
-const form = params.get('form');
-const value = params.get('value');
-const view = params.get('view');
+const form   = params.get('form');
+const value  = params.get('value');
+const view   = params.get('view');
+
+const origin = localStorage.getItem('origin');
+const base64 = localStorage.getItem('base64');
+
+const container = document.querySelector('.container');
 
 let run = router();
 
