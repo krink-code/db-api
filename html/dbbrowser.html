@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20211018-0">
+    <meta name="version" content="20211019-0">
     <title></title>
 </head>
 
@@ -58,8 +58,9 @@ function showInfo() {
         html += '<div>' + a + '<input type="text" value="'+ localStorage[a] +'" disabled ></div>'; 
     }
 
-    //<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>
-    html += '<div><button onclick="return addLocalStore();">Add Item</button></div>';
+    html += '<hr>';
+    html += '<div><button onclick="return addLocalStore();">Add Item</button>';
+    html += '     <button onclick="localStorage.clear();location.reload();">Clear Storage</button></div>';
 
     container.innerHTML = html;
 
@@ -680,10 +681,11 @@ window.addEventListener('popstate', function (event) {
 
 //-----------------------------------------------------------
 
-// specific to the api
+// specific to the db-api, which uses python mysql.connector  
+// https://dev.mysql.com/doc/connectors/en/connector-python-connectargs.html
 
-const db_api_options = [ 'X-Host', 'X-Port' ];
-
+const db_api_options = [ 'X-Host', 'X-Port', 'X-Db', 'X-Raise-Warnings', 'X-Get-Warnings', 'X-Auth-Plugin',
+                         'X-Pure', 'X-Unicode', 'X-Charset', 'X-Connection-Timeout' ];
 
 //-----------------------------------------------------------
 
