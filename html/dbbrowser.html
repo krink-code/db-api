@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20211019-0">
+    <meta name="version" content="20211020-0">
     <title></title>
 </head>
 
@@ -262,7 +262,7 @@ async function deleteItem(db, table, id) {
 
 async function showRow(db, table, id) {
 
-    const url = origin + '/api/' + db + '/' + table ;
+    const fields_url = origin + '/api/' + db + '/' + table ;
 
     const options = {};
 
@@ -276,7 +276,7 @@ async function showRow(db, table, id) {
 
     options['Authorization'] = 'Basic ' + base64;
 
-    const fields_response = await fetch(url,  {headers: options})
+    const fields_response = await fetch(fields_url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
@@ -296,7 +296,7 @@ async function showRow(db, table, id) {
     //let items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=Host' ;
     const items_url = origin + '/api/' + db + '/' + table + '/' + id + '?column=' + first_field ;
 
-    const items_response = await fetch(url,  {headers: options})
+    const items_response = await fetch(items_url,  {headers: options})
         .then(handleResponse)
         .catch(err => document.write('Request Failed ', err));
 
@@ -307,12 +307,10 @@ async function showRow(db, table, id) {
 
     items.forEach(item => {
 
-        //let column = columns[count];
         let item_field = fieldList[count];
 
-        //let htmlSegment = `<div>${columns[count]}</div>`;
         let htmlSegment = `<div>${item_field}</div>`;
-        htmlSegment    += `<div><input value="${item}" disabled >  <a href="?db=${db}&table=${table}&id=${id}&field=${item_field}&column=${first_field}&value=${item}">edit</a> </div>`;
+        htmlSegment    += `<div><input value="${item}" disabled > <a href="?db=${db}&table=${table}&id=${id}&field=${item_field}&column=${first_field}&value=${item}">edit</a> </div>`;
 
         html += htmlSegment;
         count++;
@@ -577,7 +575,7 @@ async function putForm(db, table, id) {
         const elements = document.getElementsByTagName("input");
 
         const putDict = {};
-        for (const i = 0; i < elements.length; i++) {
+        for (let i = 0; i < elements.length; i++) {
 
             const textbox = document.getElementById(elements[i].name);
 
@@ -591,6 +589,9 @@ async function putForm(db, table, id) {
         }
 
         const put_url = origin + '/api/' + db + '/' + table ;
+   
+        // add header content-type for put method
+        options['Content-Type'] = 'application/json';
 
         const response = await fetch(put_url, {
                 method: 'PUT',
