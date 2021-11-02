@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="version" content="20211020-0">
+    <meta name="version" content="20211102-0">
     <title></title>
 </head>
 
@@ -29,15 +29,19 @@ async function handleResponse(response) {
 }
 
 function Login() {
-   let login_origin = window.prompt("url: ", 'http://127.0.0.1:8980');
-   let login_user = window.prompt("username: ");
-   let login_pass = window.prompt("password: ");
-   let login_base64 = btoa(login_user + ':' + login_pass);
+    let login_origin = window.prompt("url: ", 'http://127.0.0.1:8980');
+    let login_user = window.prompt("username: ");
+    let login_pass = window.prompt("password: ");
+    let login_base64 = btoa(login_user + ':' + login_pass);
 
-   localStorage.setItem('base64', login_base64);
-   localStorage.setItem('origin', login_origin);
+    localStorage.setItem('base64', login_base64);
+    localStorage.setItem('origin', login_origin);
 
-   history.pushState({login_view: 'login'}, "login", "?view=login");
+    let html = `<div> <a href="?view=dbs">Show DataBases</a> </div>`;
+
+    container.innerHTML = html;
+
+    history.pushState({login_view: 'login'}, "login", "?view=login");
 }
 
 function Logout() {
@@ -60,7 +64,8 @@ function showInfo() {
 
     html += '<hr>';
     html += '<div><button onclick="return addLocalStore();">Add Item</button>';
-    html += '     <button onclick="localStorage.clear();location.reload();">Clear Storage</button></div>';
+    html += '     <button onclick="localStorage.clear();location.reload();">Clear Storage</button>';
+    html += '     <button onclick="return Login();">Login</button></div>';
 
     container.innerHTML = html;
 
@@ -620,9 +625,11 @@ async function putForm(db, table, id) {
 
 function landing() {
     if ( ! localStorage.getItem('base64') ) {
-        Login();
+        return Login();
+    } 
+    else {
+        return showDBs();
     }
-    showDBs();
 }
 
 function router() {
