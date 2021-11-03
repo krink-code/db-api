@@ -1,5 +1,66 @@
 
 
+
+🍗 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "localhost:8980/api/rekognition/images?q=t"
+[
+  [
+    "00000023a562a2525633af58b9a710063f56a877.jpg", 
+    {
+      "Door": 86.09169006347656, 
+      "Floor": 99.99276733398438, 
+      "Flooring": 99.99486541748047, 
+      "Indoors": 83.34758758544922, 
+      "Room": 74.61431884765625, 
+      "Wood": 57.04332733154297
+    }, 
+    "Mon, 01 Nov 2021 16:27:40 GMT", 
+    "Mon, 01 Nov 2021 16:27:40 GMT"
+  ], 
+  [
+    "image01", 
+    {
+      "key1": "val1", 
+      "key2": 2
+    }, 
+    "Wed, 03 Nov 2021 10:31:35 GMT", 
+    "Wed, 03 Nov 2021 10:31:35 GMT"
+  ]
+]
+🍗 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "localhost:8980/api/rekognition/images/00000023a562a2525633af58b9a710063f56a877.jpg?column=image"
+[
+  "00000023a562a2525633af58b9a710063f56a877.jpg", 
+  {
+    "Door": 86.09169006347656, 
+    "Floor": 99.99276733398438, 
+    "Flooring": 99.99486541748047, 
+    "Indoors": 83.34758758544922, 
+    "Room": 74.61431884765625, 
+    "Wood": 57.04332733154297
+  }, 
+  "Mon, 01 Nov 2021 16:27:40 GMT", 
+  "Mon, 01 Nov 2021 16:27:40 GMT"
+]
+🍗 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "localhost:8980/api/rekognition/images/00000023a562a2525633af58b9a710063f56a877.jpg?column=image&fields=json"
+[
+  {
+    "Door": 86.09169006347656, 
+    "Floor": 99.99276733398438, 
+    "Flooring": 99.99486541748047, 
+    "Indoors": 83.34758758544922, 
+    "Room": 74.61431884765625, 
+    "Wood": 57.04332733154297
+  }
+]
+
+
+
+
+
+---
+
+
+
+
 CREATE TABLE IF NOT EXISTS rekognition.images (
   image VARCHAR(255) PRIMARY KEY NOT NULL,
   json JSON,

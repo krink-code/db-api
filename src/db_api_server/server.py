@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.3-DEV-20211103-2'
+__version__='1.0.3-DEV-20211103-3'
 
 from flask import Flask
 
@@ -35,8 +35,15 @@ class AppJSONEncoder(flask.json.JSONEncoder):
             # Convert bytes instance to string
             try:
                 obj = obj.decode('utf-8')
-                return json.loads(obj)
-            except UnicodeDecodeError as e:
+                try:
+                    obj = json.loads(obj)
+                    return obj
+                #except json.decoder.JSONDecodeError as e:
+                except json.decoder.JSONDecodeError:
+                     return str(obj)
+
+            #except UnicodeDecodeError as e:
+            except UnicodeDecodeError:
                 return str(obj)
 
             #return json.loads(obj.decode('utf-8'))
