@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.3'
+__version__='1.0.3-DEV-20211103-0'
 
 from flask import Flask
 
@@ -21,9 +21,15 @@ import base64
 
 class AppJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
+
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string
             return str(obj)
+
+        if isinstance(obj, bytes):
+            # Convert bytes instance to string
+            return obj.decode('utf-8')
+
         return super(AppJSONEncoder, self).default(obj)
 
 
@@ -82,6 +88,10 @@ def get_many(db=None, table=None):
     rows = fetchall(SQL)
 
     if rows:
+        #print('rows ' + str(rows))
+        #if isinstance(rows, bytes):
+        #    rows = rows.decode('utf-8')
+
         return jsonify(rows), 200
     else:
         return jsonify(status=404, message="Not Found"), 404
@@ -104,6 +114,10 @@ def get_one(db=None, table=None, key=None):
     row = fetchone(SQL)
 
     if row:
+        #print('row ' + str(row))
+        #if isinstance(row, bytes):
+        #    row = row.decode('utf-8')
+
         return jsonify(row), 200
     else:
         return jsonify(status=404, message="Not Found"), 404
