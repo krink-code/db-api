@@ -99,3 +99,73 @@ curl --user dbuser:dbpass \
      127.0.0.1:89080/example3/table3
 
 
+---
+
+to encode or not to encode...  that is the question...
+only encode json, we'll deal with pictures and image binary data later
+
+
+
+🍗 karl.rink@Karl-MacBook-Pro rekognition %  curl --user dbuser:dbpass "localhost:8980/api/rekognition/images/00000023a562a2525633af58b9a710063f56a877.jpg?column=image"
+[
+  "00000023a562a2525633af58b9a710063f56a877.jpg", 
+  "{\"Flooring\": 99.99486541748047, \"Floor\": 99.99276733398438, \"Door\": 86.09169006347656,\n    \"Indoors\": 83.34758758544922, \"Room\": 74.61431884765625, \"Wood\": 57.04332733154297}", 
+  "Mon, 01 Nov 2021 16:27:40 GMT", 
+  "Mon, 01 Nov 2021 16:27:40 GMT"
+]
+🍗 karl.rink@Karl-MacBook-Pro rekognition %  curl --user dbuser:dbpass "localhost:8980/api/rekognition/images/00000023a562a2525633af58b9a710063f56a877.jpg?column=image"
+[
+  "00000023a562a2525633af58b9a710063f56a877.jpg", 
+  "\"{\\\"Flooring\\\": 99.99486541748047, \\\"Floor\\\": 99.99276733398438, \\\"Door\\\": 86.09169006347656,\\n    \\\"Indoors\\\": 83.34758758544922, \\\"Room\\\": 74.61431884765625, \\\"Wood\\\": 57.04332733154297}\"", 
+  "Mon, 01 Nov 2021 16:27:40 GMT", 
+  "Mon, 01 Nov 2021 16:27:40 GMT"
+]
+🍗 karl.rink@Karl-MacBook-Pro rekognition %  curl --user dbuser:dbpass "localhost:8980/api/rekognition/images/00000023a562a2525633af58b9a710063f56a877.jpg?column=image"
+[
+  "00000023a562a2525633af58b9a710063f56a877.jpg", 
+  {
+    "Door": 86.09169006347656, 
+    "Floor": 99.99276733398438, 
+    "Flooring": 99.99486541748047, 
+    "Indoors": 83.34758758544922, 
+    "Room": 74.61431884765625, 
+    "Wood": 57.04332733154297
+  }, 
+  "Mon, 01 Nov 2021 16:27:40 GMT", 
+  "Mon, 01 Nov 2021 16:27:40 GMT"
+]
+🍗 karl.rink@Karl-MacBook-Pro rekognition %
+
+
+
+🍗 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "localhost:8980/api/asset/inventory?column=sn&fields=sn,json"
+[
+  [
+    "001_image.png", 
+    null
+  ], 
+  [
+    "sn001", 
+    {
+      "integer": 1, 
+      "json": true, 
+      "string": "testing", 
+      "url": null
+    }
+  ]
+]
+🍗 karl.rink@Karl-MacBook-Pro ~ % curl --user dbuser:dbpass "localhost:8980/api/asset/inventory?column=sn&fields=sn,picture"
+[
+  [
+    "001_image.png", 
+    "b'\\x89PNG\\r\\n\\x1a\\n\\x00\\x00\\x00 ... x00\\x00\\x00IEND\\xaeB`\\x82'"
+  ], 
+  [
+    "sn001", 
+    null
+  ]
+]
+
+
+
+

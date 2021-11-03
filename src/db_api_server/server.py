@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.3-DEV-20211103-0'
+__version__='1.0.3-DEV-20211103-2'
 
 from flask import Flask
 
@@ -19,8 +19,13 @@ import mysql.connector
 
 import base64
 
+import json
+
 class AppJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
+
+        #for attr in dir(obj):
+        #    print("obj.%s = %r" % (attr, getattr(obj, attr)))
 
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string
@@ -28,7 +33,16 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 
         if isinstance(obj, bytes):
             # Convert bytes instance to string
-            return obj.decode('utf-8')
+            try:
+                obj = obj.decode('utf-8')
+                return json.loads(obj)
+            except UnicodeDecodeError as e:
+                return str(obj)
+
+            #return json.loads(obj.decode('utf-8'))
+
+        #if isinstance(obj, bytes):
+        #    return json.dumps(obj)
 
         return super(AppJSONEncoder, self).default(obj)
 
