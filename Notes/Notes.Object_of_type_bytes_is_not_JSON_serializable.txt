@@ -57,3 +57,45 @@ row is bytes
 
 
 
+
+CREATE DATABASE IF NOT EXISTS example3;
+
+CREATE TABLE IF NOT EXISTS example3.table3 (
+  id VARCHAR(255) PRIMARY KEY NOT NULL,
+  json JSON,
+  created DATETIME DEFAULT CURRENT_TIMESTAMP,
+  modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FULLTEXT(json),
+  CHECK(JSON_VALID(json))
+) ENGINE=InnoDB;
+
+
+
+MariaDB [(none)]> desc example3.table3;
++----------+--------------+------+-----+---------------------+-------------------------------+
+| Field    | Type         | Null | Key | Default             | Extra                         |
++----------+--------------+------+-----+---------------------+-------------------------------+
+| id       | varchar(255) | NO   | PRI | NULL                |                               |
+| json     | longtext     | YES  | MUL | NULL                |                               |
+| created  | datetime     | YES  |     | current_timestamp() |                               |
+| modified | datetime     | YES  |     | current_timestamp() | on update current_timestamp() |
++----------+--------------+------+-----+---------------------+-------------------------------+
+4 rows in set (0.003 sec)
+
+MariaDB [(none)]> select * from example3.table3;
++------+--------------------------------+---------------------+---------------------+
+| id   | json                           | created             | modified            |
++------+--------------------------------+---------------------+---------------------+
+| id01 | {"key1":"val1", "key2":"val2"} | 2021-11-02 18:43:21 | 2021-11-02 18:43:21 |
++------+--------------------------------+---------------------+---------------------+
+1 row in set (0.000 sec)
+
+MariaDB [(none)]> 
+
+
+curl --user dbuser:dbpass \
+     -H "Content-Type: application/json" \
+     --data '{"id":"id01","json":"{\"key1\":\"val1\"}"}' \
+     127.0.0.1:89080/example3/table3
+
+
