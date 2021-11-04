@@ -1,3 +1,4 @@
+1.0.4 - mariadb json data type
 1.0.3 - json serialize decimal to str
 1.0.2 - form post data
 1.0.1 - flask-cors

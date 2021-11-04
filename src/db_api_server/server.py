@@ -1,55 +1,43 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.3-DEV-20211103-3'
+__version__='1.0.4'
 
 from flask import Flask
-
 from flask import request
 from flask import jsonify
-
-import flask.json
-import decimal
-
 from werkzeug.exceptions import HTTPException
+import flask.json
 
 from flask_cors import CORS
 
 import mysql.connector
 
 import base64
-
+import decimal
 import json
+import logging
+
 
 class AppJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
-
-        #for attr in dir(obj):
-        #    print("obj.%s = %r" % (attr, getattr(obj, attr)))
 
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string
             return str(obj)
 
         if isinstance(obj, bytes):
-            # Convert bytes instance to string
+            # Convert bytes instance to string, json
             try:
                 obj = obj.decode('utf-8')
                 try:
                     obj = json.loads(obj)
                     return obj
-                #except json.decoder.JSONDecodeError as e:
                 except json.decoder.JSONDecodeError:
                      return str(obj)
 
-            #except UnicodeDecodeError as e:
             except UnicodeDecodeError:
                 return str(obj)
-
-            #return json.loads(obj.decode('utf-8'))
-
-        #if isinstance(obj, bytes):
-        #    return json.dumps(obj)
 
         return super(AppJSONEncoder, self).default(obj)
 
@@ -58,6 +46,8 @@ app = Flask(__name__)
 CORS(app, support_credentials=True)
 
 app.json_encoder = AppJSONEncoder
+
+app.logger.setLevel(logging.INFO)
 
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
 app.config['JSON_SORT_KEYS'] = True                 #default True
@@ -109,10 +99,6 @@ def get_many(db=None, table=None):
     rows = fetchall(SQL)
 
     if rows:
-        #print('rows ' + str(rows))
-        #if isinstance(rows, bytes):
-        #    rows = rows.decode('utf-8')
-
         return jsonify(rows), 200
     else:
         return jsonify(status=404, message="Not Found"), 404
@@ -135,10 +121,6 @@ def get_one(db=None, table=None, key=None):
     row = fetchone(SQL)
 
     if row:
-        #print('row ' + str(row))
-        #if isinstance(row, bytes):
-        #    row = row.decode('utf-8')
-
         return jsonify(row), 200
     else:
         return jsonify(status=404, message="Not Found"), 404
@@ -407,7 +389,6 @@ def sqlConnection(user=None, password=None):
     }
     db = mysql.connector.connect(**config)
     return db
-
 
 
 def main():

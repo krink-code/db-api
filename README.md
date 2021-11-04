@@ -193,19 +193,21 @@ curl --user dbuser:dbpass \
 ---    
 
 ```
-db-api-server
+db-api-server  
 ``` 
 https://pypi.org/project/db-api-server    
 
 
 ### docker    
 ```
-docker pull dcsops/db-api
+docker pull dcsops/db-api  
 ```
-https://hub.docker.com/r/dcsops/db-api
+https://hub.docker.com/r/dcsops/db-api  
 
 
 ### Production deployments   
+https://flask.palletsprojects.com/en/2.0.x/tutorial/deploy/  
+
 https://gunicorn.org/#deployment   
 
 ---   

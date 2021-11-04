@@ -7,8 +7,10 @@ ADD requirements.txt /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN pip install gunicorn
+
 ADD wsgi.py /app
-ADD src/db_api_server/server.py /app/db_api_server/server.py
+ADD src/db_api_server/server.py /app/src/db_api_server/server.py
 
 CMD gunicorn --bind 0.0.0.0:8980 -w 3 --log-level=info wsgi:app
 
@@ -28,3 +30,5 @@ EXPOSE 8980
 ### public registry
 # https://hub.docker.com/r/dcsops/db-api
 #
+# docker push dcsops/db-api:tagname
+
