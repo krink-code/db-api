@@ -1,7 +1,7 @@
 
 -- mysql/mariadb
 
-CREATE DATABASE IF NOT EXISTS asset;
+CREATE DATABASE IF NOT EXISTS asset CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS asset.inventory (
   sn VARCHAR(255) PRIMARY KEY NOT NULL,
@@ -13,8 +13,9 @@ CREATE TABLE IF NOT EXISTS asset.inventory (
   note TEXT,
   created DATETIME DEFAULT CURRENT_TIMESTAMP,
   modified DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FULLTEXT(name, description, note)
-) ENGINE=InnoDB;
-
+  FULLTEXT(json),
+  FULLTEXT(name, description, note),
+  CHECK(JSON_VALID(json))
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 
