@@ -1,0 +1,24 @@
+
+when table last changed?
+/api/information_schema/tables/inventory?column=TABLE_NAME&fields=UPDATE_TIME
+
+
+
+
+---
+
+
+mysql> SELECT table_rows FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'asset';
++------------+
+| table_rows |
++------------+
+|         14 |
++------------+
+1 row in set (0.00 sec)
+
+
+/api/information_schema/tables/asset?column=TABLE_SCHEMA&fields=TABLE_ROWS
+
+
+
+
