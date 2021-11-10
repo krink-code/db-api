@@ -296,6 +296,8 @@ window.addEventListener( "load", function () {
 
 // setRequestHeader("Content-Type", "application/x-www-form-urlencoded") is needed to get past the web app firewall
 
+// when using FormData you are locking yourself into multipart/form-data. There is no way to send a FormData object as the body and not sending data in the multipart/form-data format.
+
     // The data sent is what the user provided in the form
     XHR.send( FD );
   }
