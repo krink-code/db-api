@@ -259,38 +259,56 @@ async function inventoryForm(db='asset', table='inventory') {
     container.innerHTML = html;
 
     //const form = document.querySelector('#form');
-    const form = document.getElementById('form');
 
 window.addEventListener( "load", function () {
+  function sendData() {
+    const XHR = new XMLHttpRequest();
 
-  async function sendData() {
+    // Bind the FormData object and the form element
+    const FD = new FormData( form );
 
-    //const data = new URLSearchParams(new FormData(formElement));
-    const data = new URLSearchParams();
-    for (const pair of new FormData(form)) {
-        data.append(pair[0], pair[1]);
-        console.log(pair[0], pair[1]);
-    }
+    // Define what happens on successful data submission
+    XHR.addEventListener( "load", function(event) {
+      alert( event.target.responseText );
+    } );
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: data,
-    })
-      .then(handleResponse)
-      .catch(err => container.innerHTML = 'ResponseError: ' + err );
+    // Define what happens in case of error
+    XHR.addEventListener( "error", function( event ) {
+      alert( 'Oops! Something went wrong. ' + event.target.responseText + '!' );
+    } );
 
-      const items = await response.json()
-          .catch(err => container.innerHTML = err);
+    // Set up our request
+    XHR.open( "POST", url );
 
-    alert(JSON.stringify(items, null, 2));
+    //XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // https://stackoverflow.com/questions/46640024/how-do-i-post-form-data-with-fetch-api
+    // XHR error when setting XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+/*
+{
+  "details": "No valid authentication credentials for the target resource",
+  "insert": false,
+  "message": "Unauthorized",
+  "method": "POST",
+  "status": 401
+}
+*/
+
+// setRequestHeader("Content-Type", "application/x-www-form-urlencoded") is needed to get past the web app firewall
+
+// when using FormData you are locking yourself into multipart/form-data. There is no way to send a FormData object as the body and not sending data in the multipart/form-data format.
+
+    // The data sent is what the user provided in the form
+    XHR.send( FD );
   }
 
-  // take over submit event.
+  // Access the form element by ID...
+  const form = document.getElementById( "form" );
+
+  // ...and take over its submit event.
   form.addEventListener( "submit", function ( event ) {
     event.preventDefault();
+
     sendData();
   } );
 } );
