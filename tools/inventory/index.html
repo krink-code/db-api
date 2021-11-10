@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="description" content="asset.inventory">
-    <meta name="version" content="20211109-2">
+    <meta name="version" content="20211109-test1">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -214,7 +214,7 @@ async function inventoryForm(db='asset', table='inventory') {
 
     //html += `<div><form method="POST" action="${url}" onsubmit="return redirect();">`;
 
-    html += `<div><form id="inventoryForm" method="POST" action="${url}" >`;
+    html += `<div><form id="form" method="POST" action="${url}" >`;
 
     html += `<div>`;
     html += `<input type="text" name="sn" id="sn" value="serial number" >`;
@@ -246,7 +246,8 @@ async function inventoryForm(db='asset', table='inventory') {
     html += `<button type="button" onclick="toggleEnable('json')">Toggle</button>`;
     html += `</div>`;
 
-    html += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
+    //html += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
+    html += `<div><input type="hidden" name="credentials" id="credentials" value="${base64}"></div>`;
 
     html += `<div><input type="submit" value="post">`;
 
@@ -257,47 +258,60 @@ async function inventoryForm(db='asset', table='inventory') {
 
     container.innerHTML = html;
 
-    window.addEventListener( "load", function () {
-        function sendData() {
-            const XHR = new XMLHttpRequest();
+    //const form = document.querySelector('#form');
 
-            // Bind the FormData object and the form element
-            const FD = new FormData( form );
+window.addEventListener( "load", function () {
+  function sendData() {
+    const XHR = new XMLHttpRequest();
 
-            // Define what happens on successful data submission
-            XHR.addEventListener( "load", function(event) {
-              alert( event.target.responseText );
-            } );
+    // Bind the FormData object and the form element
+    const FD = new FormData( form );
 
-            // Define what happens in case of error
-            XHR.addEventListener( "error", function( event ) {
-              alert( 'Oops! Something went wrong.' + JSON.stringify(event) );
-            } );
+    // Define what happens on successful data submission
+    XHR.addEventListener( "load", function(event) {
+      alert( event.target.responseText );
+    } );
 
-            // Set up our request
-            //XHR.open( "POST", "https://example.com/cors.php" );
-            XHR.open( "POST", url );
-            //XHR.open( "POST", url, true );
+    // Define what happens in case of error
+    XHR.addEventListener( "error", function( event ) {
+      alert( 'Oops! Something went wrong. ' + event.target.responseText + '!' );
+    } );
 
-            //XHR.setRequestHeader("Content-Type", "application/json");
-            XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // Set up our request
+    XHR.open( "POST", url );
 
-            // The data sent is what the user provided in the form
-            XHR.send( FD );
-      }
+    //XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    // https://stackoverflow.com/questions/46640024/how-do-i-post-form-data-with-fetch-api
+    // XHR error when setting XHR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-      // Access the form element...
-      const form = document.getElementById( "inventoryForm" );
+/*
+{
+  "details": "No valid authentication credentials for the target resource",
+  "insert": false,
+  "message": "Unauthorized",
+  "method": "POST",
+  "status": 401
+}
+*/
 
-      // ...and take over its submit event.
-      form.addEventListener( "submit", function ( event ) {
-        event.preventDefault();
-        sendData();
-      } );
+// setRequestHeader("Content-Type", "application/x-www-form-urlencoded") is needed to get past the web app firewall
 
+    // The data sent is what the user provided in the form
+    XHR.send( FD );
+  }
+
+  // Access the form element by ID...
+  const form = document.getElementById( "form" );
+
+  // ...and take over its submit event.
+  form.addEventListener( "submit", function ( event ) {
+    event.preventDefault();
+
+    sendData();
   } );
+} );
 
-
+// https://developer.mozilla.org/en-US/docs/Learn/Forms/Sending_forms_through_JavaScript
 
     document.title = 'inventory form post ' + db +' '+ table;
 
@@ -826,7 +840,8 @@ async function putForm(db, table, id) {
     }
 
     htmlSegment += `<div>credentials</div>`;
-    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}" disabled ></div>`;
+    //htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}" ></div>`;
+    htmlSegment += `<div><input type="password" name="credentials" id="credentials" value="${base64}"></div>`;
 
     htmlSegment += `<div><input type="submit" name="submit" id="submit" value="put" ></div>`;
 
