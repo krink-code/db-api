@@ -1,9 +1,7 @@
 
--- mysql/mariadb
+CREATE DATABASE IF NOT EXISTS asset CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE DATABASE IF NOT EXISTS example2;
-
-CREATE TABLE IF NOT EXISTS example2.table2 (
+CREATE TABLE IF NOT EXISTS asset.inventory (
   sn VARCHAR(255) PRIMARY KEY NOT NULL,
   name VARCHAR(255),
   description LONGTEXT,
@@ -16,7 +14,5 @@ CREATE TABLE IF NOT EXISTS example2.table2 (
   FULLTEXT(json),
   FULLTEXT(name, description, note),
   CHECK(JSON_VALID(json))
-) ENGINE=InnoDB;
-
-
+) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
