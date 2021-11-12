@@ -13,7 +13,7 @@ cat <<-EOE > ../html/dbbrowser.html
     <title></title>
 
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="stules.css">
+    <link rel="stylesheet" href="styles.css">
 <style>
 
 EOE

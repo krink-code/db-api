@@ -8,7 +8,7 @@
     <title></title>
 
     <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="stules.css">
+    <link rel="stylesheet" href="styles.css">
 <style>
 
 
@@ -85,7 +85,7 @@ section {
     </section>
 <script type="text/javascript" defer="defer">
 
-const version = '20211111-0';
+const version = '20211112-0';
 
 /* 
  * SPA (Single-page application)
@@ -175,9 +175,6 @@ async function viewInventory(db='asset', table='inventory', column='sn', fields=
 
     const decodedString = atob(base64);
     let username = decodedString.split(":")[0];
-    //console.log('username is ' + username);
-    //console.log('username.length is ' + username.length);
-
     if (username.length === 0) {
         console.log('username is null');
         username = 'None';
@@ -197,16 +194,6 @@ async function viewInventory(db='asset', table='inventory', column='sn', fields=
     let htmlFooter  = '';
 
     htmlHeader += '<div class="main-nav">';
-    //htmlHeader += '<div><a href="?"><button type="button">Home</button></a></div>';
-
-    //htmlHeader += '<img src="img/favicon.ico" alt="Home" width="24" height="24"> ';
-    //htmlHeader += '<img src="img/120px-Rating_Badge_JO.jpg" alt="Home"> ';
-    //htmlHeader += '<a href="#" class="btnTest">Test</a>';
-
-    //htmlHeader += '<div class="btn btn_red"><span class="icon"></span><a href="#">Crimson</a><span></span></div>';
-    //htmlHeader += '<div><a href="?"><button type="button" class="icon"></button></a></div>';
-    //
-    
     htmlHeader += '<div><a href="?"><button type="button">Home</button></a></div>';
     htmlHeader += '<div><a href="?form=inventory"><button type="button">Add</button></a></div>';
     htmlHeader += '<div class="push"><form>';
@@ -394,11 +381,13 @@ function showInfo() {
     html += '<div><button onclick="return addLocalStore();">Add Item</button>';
     html += '     <button onclick="localStorage.clear();location.reload();">Clear Storage</button>';
     html += '     <button onclick="return Login();">Login</button>';
-    html += '     <a href="?"><button>Home</button></a>';
+    //html += '     <a href="?"><button>Home</button></a>';
     //html += '     <a href="?view=dbs"><button>Show DataBases</button></a>';
     html += '</div>';
 
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
+    footer.innerHTML = ``;
 
     history.pushState({page: 'info'}, "info", "?view=info");
 }
@@ -505,6 +494,7 @@ async function showTables(db) {
         html += htmlSegment;
     });
 
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
 
     document.title = db;
@@ -513,7 +503,7 @@ async function showTables(db) {
 }
 
 
-async function listItems(db, table) {
+async function listALLItems(db, table) {
 
     //let url = origin + '/api/' + db + '/' + table + "?limit=100" ;
     const url = origin + '/api/' + db + '/' + table + "?query=true" ;
@@ -549,12 +539,140 @@ async function listItems(db, table) {
         html += htmlSegment;
     });
 
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
+    footer.innerHTML = `<a href="?form=post&db=${db}&table=${table}"><button>Insert</button></a>`;
 
     document.title = db +' '+ table;
 
-    history.pushState({page: db + table}, db + table, "?db=" + db + "&table=" + table);
+    history.pushState({page: 'ListAllItems' + db + table}, 'ListAllItems' + db + table, "?db=" + db + "&table=" + table);
 }
+
+async function listItems(db, table, column='id', fields=['id'], skip=0, batch=10 ) {
+
+    const url = origin + '/api/' + db + '/' + table + '?column='+column+'&fields='+fields+'&limit='+skip+','+batch ;
+
+    const options = {};
+    const arrayLength = db_api_options.length;
+    for (let i = 0; i < arrayLength; i++) {
+        let v = localStorage.getItem(db_api_options[i]);
+        if (v) {
+            options[ db_api_options[i] ] = v;
+        }
+    }
+    options['Authorization'] = 'Basic ' + base64;
+
+    const decodedString = atob(base64);
+    let username = decodedString.split(":")[0];
+    if (username.length === 0) {
+        console.log('username is null');
+        username = 'None';
+    }
+
+    let htmlErrorResponse = ' ' + origin + ' (User: ' + username + ') <a href="?login"><button type="button">Login</button></a>';
+
+
+    /* get fields */
+    const fields_url = origin + '/api/' + db + '/' + table ;
+
+    const fields_response = await fetch(fields_url, {headers: options})
+        .then(getResponse)
+        .catch(err => container.innerHTML = 'ResponseError: ' + err + htmlErrorResponse);
+
+    const fields_json = await fields_response.json();
+    const field_columns = {};
+
+    fields_json.forEach(item => {
+
+        let strArr = item.toString().split(",");
+
+        let field_name = strArr[0];
+        let field_type = strArr[1];
+        let field_null = strArr[2];
+        let field_key  = strArr[3];
+        let field_default = strArr[4];
+        let field_extra = strArr[5];
+
+        let disabled = '';
+
+        if (field_extra === 'auto_increment') {
+            disabled = 'disabled';
+        }
+
+        if (field_default === 'current_timestamp()') {
+            disabled = 'disabled';
+        }
+
+        field_columns[field_name] = disabled;
+
+    });
+
+    /* working on right here */
+
+    const response = await fetch(url,  {headers: options})
+        .then(getResponse)
+        .catch(err => container.innerHTML = 'ResponseError: ' + err + htmlErrorResponse);
+
+    const items = await response.json()
+        .catch(err => container.innerHTML = err);
+
+    let htmlContent = '';
+
+    if (typeof items.length === 'undefined') {
+        console.log('undefined items');
+        htmlContent += JSON.stringify(items);
+    } else {
+
+        items.forEach(item => {
+
+            let strArr = item.toString().split(",");
+            let id = strArr[0];
+
+            let htmlSegment = `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a> `;
+            htmlSegment    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
+            //htmlSegment    += `<button onclick="deleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
+            htmlSegment    += `<button onclick="questiondeleteItem('${db}', '${table}', '${id}')">Delete</button> </div>`;
+            htmlContent += htmlSegment;
+        });
+    }
+
+    let htmlHeader = '';
+    htmlHeader += `<a href="?"><button type="button">Home</button></a>`;
+    htmlHeader += `<a href="?form=post&db=${db}&table=${table}"><button>Insert</button></a>`;
+
+    const nskip = +skip + 5;
+    const bskip = +skip - 5;
+
+    if (skip > 0) {
+        //console.log('skip greater than zero');
+        htmlContent += `<a href="?db=${db}&table=${table}&column=${column}&fields=${fields}&skip=${bskip}&batch=${batch}"><button type="button">Back</button></a>`;
+    }
+    htmlContent += `<a href="?db=${db}&table=${table}&column=${column}&fields=${fields}&skip=${nskip}&batch=${batch}"><button type="button">Next</button></a>`;
+
+    const url_table_data = origin + '/api/information_schema/tables/'+ table + '?column=TABLE_NAME&fields=TABLE_ROWS,UPDATE_TIME' ;
+
+    const url_response = await fetch(url_table_data,  {headers: options})
+        .then(getResponse)
+        .catch(err => container.innerHTML = 'ResponseError: ' + err );
+
+    const table_data = await url_response.json()
+        .catch(err => container.innerHTML = err);
+
+    let htmlFooter = '';
+    htmlFooter +=`<div><p> ${table_data} </p></div>`;
+
+    header.innerHTML = htmlHeader;
+    container.innerHTML = htmlContent;
+    footer.innerHTML = htmlFooter;
+
+    document.title = db +' '+ table;
+
+    console.log('listItems');
+
+    //history.pushState({page: db + table}, db + table, "?db=" + db + "&table=" + table);
+    history.pushState({page: 'listItems ' + db + table + skip + batch + [ fields ] + column }, 'listItems' + db + table + skip + batch + [ fields ] + column, "?db="+db+"&table="+table+"&column="+column+"&fields="+fields+"&skip="+skip+"&batch="+batch);
+}
+
 
 async function questiondeleteItem(db, table, id, column='id') {
 
@@ -1065,7 +1183,30 @@ function router() {
         return showRow(db, table, id);
 
     } else if (params.has('db') && params.has('table')) {
-        return listItems(db, table);
+        //return listItems(db, table);
+
+            let column = 'id';
+            let skip = 0;
+            let batch = 10;
+            let fields = [ 'id' ];
+
+            if (params.has('skip')) {
+                skip = params.get('skip');
+            }
+
+            if (params.has('batch')) {
+                batch = params.get('batch');
+            }
+
+            if (params.has('fields')) {
+                fields = params.get('fields');
+            }
+
+            if (params.has('column')) {
+                column = params.get('column');
+            }
+
+        return listItems(db, table, column, fields, skip, batch);
 
     } else if (params.has('db')) {
         return showTables(db);
