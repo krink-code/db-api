@@ -19,6 +19,7 @@ function fillSheet1() {
   const response = UrlFetchApp.fetch(url, options);
   const data = response.getContentText("UTF-8");
   const json = JSON.parse(data);
+
   const gDict = {};
 
   for (const row of Object.keys(json)) {
@@ -58,12 +59,10 @@ function onOpen() {
 var menu = {
   item1: function() {
     //SpreadsheetApp.getUi().alert('You clicked: First item');
-    //fillSheet1();
     probeTable();
   },
   item2: function() {
     //SpreadsheetApp.getUi().alert('You clicked: Second item');
-    //probeTable();
     fillSheet1();
   }
 }
@@ -71,10 +70,9 @@ var menu = {
 // https://developers.google.com/apps-script/guides/v8-runtime  
 // https://spreadsheet.dev/toast-notifications-in-google-sheets
 
-
 function probeTable() {
 
-  const url = origin + '/api/information_schema/tables/inventory?column=TABLE_NAME&fields=UPDATE_TIME';
+  const url = origin + '/api/information_schema/tables/inventory?column=TABLE_NAME&fields=TABLE_ROWS,UPDATE_TIME';
 
   const options = { method: 'GET', 
                     contentType: 'application/json', 
@@ -84,58 +82,22 @@ function probeTable() {
   const response = UrlFetchApp.fetch(url, options);
   const data = response.getContentText("UTF-8");
   const json = JSON.parse(data);
-  const gDict = {};
-
-  for (const row of Object.keys(json)) {
-    gDict[row] = json[row];
-  }
 
   const spreadsheet = SpreadsheetApp.getActive();
   const sheet = spreadsheet.getSheetByName('Sheet1');
   
-  
-  for (const [row, item] of Object.entries(gDict)) {
-    //var strArr = [];
-    //for (const element of item) {
-      //Logger.log(element);
-    //  strArr.push(element);
-    //}
-    
-    //sheet.appendRow(strArr);
-
-    Logger.log(item);
-    //sheet.appendRow(item);
-
-    let title = '⏰ Last Table Change';
-    toastMessageTitle(item, title);
-
-  }
-
-  //sheet.appendRow(strArr);
+  let title = '⏰ Last Table Change';
+  toastMessageTitle(json, title);
 
   Logger.log("probeTable");
 }
 
 function toastMessageTitle(message=None, title=None) {
 
-  //SpreadsheetApp.getActive().toast(message, title, 15);  // display for 15 seconds
   //SpreadsheetApp.getActive().toast(message, title);
-  SpreadsheetApp.getActive().toast(message, title, 60);
+  SpreadsheetApp.getActive().toast(message, title, 60); // display for 60 seconds
 
 }
-
-function setBackgroundColorOnEvenLines() {
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  var sheet = ss.getActiveSheet();
-  var totalRows = sheet.getMaxRows();
-  var totalColumns = sheet.getMaxColumns()
-
-  for (var i=2; i <= totalRows; i+=2){
-      sheet.getRange(i, 1, 1, totalColumns).setBackground("#F3F3F3");
-  }
-}
-
 
 function onEdit(e) {
 
@@ -151,30 +113,7 @@ function onEdit(e) {
 
 }
 
-
-//Returns the offset value of the column titled "Status"
-//(eg, if the 7th column is labeled "Status", this function returns 6)
-function getStatusColumnOffset() {
-  lastColumn = SpreadsheetApp.getActiveSheet().getLastColumn();
-  var range = SpreadsheetApp.getActiveSheet().getRange(1,1,1,lastColumn);
-
-  for (var i = 0; i < range.getLastColumn(); i++) {
-    if (range.offset(0, i, 1, 1).getValue() == "Status") {
-      return i;
-    } 
-  }
-}
-
-
-function toastMessageTimeout() {
-  // Display the toast for 15 seconds
-  SpreadsheetApp.getActive().toast("Message", "Title", 15);
-}
-
-
-Logger.log('start');
+Logger.log('run');
 
 // https://spreadsheet.dev/toast-notifications-in-google-sheets
-
-
 

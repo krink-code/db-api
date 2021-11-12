@@ -32,7 +32,8 @@ section {
 
 .page-header,
 .page-footer {
-    background-color: rgb(75, 70, 74);
+    background-color: rgb(75, 70, 74); 
+    /* background-color: blue; */
     color: #fff;
     padding: 20px;
 }
@@ -53,4 +54,5 @@ section {
 .push {
     margin-left: auto;
 }
+
 

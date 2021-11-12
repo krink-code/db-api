@@ -1,5 +1,5 @@
 
-const version = '20211110-dev1';
+const version = '20211111-0';
 
 /* 
  * SPA (Single-page application)
@@ -7,6 +7,36 @@ const version = '20211110-dev1';
  */
 
 const start = performance.now();
+
+const origin = localStorage.getItem('origin');
+const base64 = localStorage.getItem('base64');
+
+var appname = document.querySelector('meta[name="application-name"]') !== null;
+if (appname) {
+    var appname = document.querySelector('meta[name="application-name"]').content;
+}
+
+const header    = document.querySelector('.page-header');
+const container = document.querySelector('.container');
+const footer    = document.querySelector('.page-footer');
+
+const params = new URLSearchParams(location.search);
+
+const db     = params.get('db');
+const table  = params.get('table');
+const id     = params.get('id');
+const field  = params.get('field');
+const column = params.get('column');
+const form   = params.get('form');
+const value  = params.get('value');
+const view   = params.get('view');
+
+// specific to the db-api-server, which uses python mysql.connector
+// https://dev.mysql.com/doc/connectors/en/connector-python-connectargs.html
+const db_api_options = [ 'X-Host', 'X-Port', 'X-Db', 'X-Raise-Warnings', 'X-Get-Warnings', 'X-Auth-Plugin',
+                         'X-Pure', 'X-Unicode', 'X-Charset', 'X-Connection-Timeout' ];
+
+//---------------------------------------------------------
 
 async function getResponse(response) {
     if ( ! response.ok) {
@@ -25,7 +55,6 @@ function Login() {
     localStorage.setItem('base64', login_base64);
     localStorage.setItem('origin', login_origin);
 
-    //location.replace('?view=inventory');
     location.replace('?');
 }
 
@@ -82,13 +111,23 @@ async function viewInventory(db='asset', table='inventory', column='sn', fields=
     let htmlFooter  = '';
 
     htmlHeader += '<div class="main-nav">';
+    //htmlHeader += '<div><a href="?"><button type="button">Home</button></a></div>';
+
+    //htmlHeader += '<img src="img/favicon.ico" alt="Home" width="24" height="24"> ';
+    //htmlHeader += '<img src="img/120px-Rating_Badge_JO.jpg" alt="Home"> ';
+    //htmlHeader += '<a href="#" class="btnTest">Test</a>';
+
+    //htmlHeader += '<div class="btn btn_red"><span class="icon"></span><a href="#">Crimson</a><span></span></div>';
+    //htmlHeader += '<div><a href="?"><button type="button" class="icon"></button></a></div>';
+    //
+    
     htmlHeader += '<div><a href="?"><button type="button">Home</button></a></div>';
     htmlHeader += '<div><a href="?form=inventory"><button type="button">Add</button></a></div>';
-    htmlHeader += '<div><a href="?logout"><button type="button">Logout</button></a></div>';
     htmlHeader += '<div class="push"><form>';
     htmlHeader += '<input type="search" placeholder=" Search..." name="search">';
     htmlHeader += '<button type="submit">Search</button>';
     htmlHeader += '</form></div>';
+    htmlHeader += '<div><a href="?logout"><button type="button">Logout</button></a></div>';
     htmlHeader += '</div>';
 
     if (typeof items.length === 'undefined') {
@@ -101,9 +140,9 @@ async function viewInventory(db='asset', table='inventory', column='sn', fields=
             let strArr = item.toString().split(",");
             let id = strArr[0];
 
-            htmlContent    += `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a> `;
-            htmlContent    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
-            htmlContent    += `<button onclick="questiondeleteItem('${db}', '${table}', '${id}', 'sn')">Delete</button> </div>`;
+            htmlContent    += `<div> <a href="?db=${db}&table=${table}&id=${id}">${item}</a></div>`;
+            //htmlContent    += `<button onclick="putForm('${db}', '${table}', '${id}')">Replace</button>`;
+            //htmlContent    += `<button onclick="questiondeleteItem('${db}', '${table}', '${id}', 'sn')">Delete</button> </div>`;
         });
 
     }
@@ -126,7 +165,8 @@ async function viewInventory(db='asset', table='inventory', column='sn', fields=
     const table_data = await url_response.json()
         .catch(err => container.innerHTML = err);
 
-    htmlFooter += `<p> ${table_data} </p>`;
+    //htmlFooter += `<div><p> ${table_data} </p></div><div><a href="?logout"><button type="button">Logout</button></a></div>`;
+    htmlFooter += `<div><p> ${table_data} </p></div>`;
 
     header.innerHTML    = htmlHeader;
     container.innerHTML = htmlContent;
@@ -291,13 +331,8 @@ async function showDBs() {
 
     const url = origin + '/api';
 
-    let html_footer = '<div><button onclick="showInfo();location.reload();">Info</button></div>';
-    html_footer    += '<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>';
-
     const options = {};
-
     const arrayLength = db_api_options.length;
-    //console.log(arrayLength);
     for (let i = 0; i < arrayLength; i++) {
         const v = localStorage.getItem(db_api_options[i]);
         //console.log('v ' + v);
@@ -308,28 +343,47 @@ async function showDBs() {
         }
 
     }
-
     options['Authorization'] = 'Basic ' + base64;
+
+    const decodedString = atob(base64);
+    let username = decodedString.split(":")[0];
+    if (username.length === 0) {
+        //console.log('username is null');
+        username = 'None';
+    }
+
+    let htmlErrorResponse = ' ' + origin + ' (User: ' + username + ') <a href="?login"><button type="button">Login</button></a>';
 
     //let response = await fetch(url, {headers:{Authorization: 'Basic ' + base64, 'X-Host': '192.168.1.197'}})
     const response = await fetch(url,  {headers: options})
         .then(getResponse)
-        .catch(err => document.write('Request Failed ', err + html_footer));
-        //.catch(err => document.write('Request Failed ', err + '<div><button onclick="localStorage.clear();location.reload();">Clear</button></div>'));
+        .catch(err => container.innerHTML = 'ResponseError: ' + err + htmlErrorResponse);
 
-    const items = await response.json();
+    const items = await response.json()
+        .catch(err => container.innerHTML = err);
 
     let html = '';
-    items.forEach(item => {
-        //let htmlSegment = `<div> <button onclick="showTables('${item}')">${item}</button> </div>`;
-        let htmlSegment = `<div> <a href="?db=${item}">${item}</a></div>`;
-        html += htmlSegment;
-    });    
 
-    html += '<hr><div><button onclick="showInfo();">Info</button>';
-    html += '<button onclick="localStorage.clear();location.reload();">Logout</button></div>';
+    if (typeof items.length === 'undefined') {
+        console.log('undefined items');
+        html += JSON.stringify(items);
+    } else {
 
+        items.forEach(item => {
+            //let htmlSegment = `<div> <button onclick="showTables('${item}')">${item}</button> </div>`;
+            let htmlSegment = `<div> <a href="?db=${item}">${item}</a></div>`;
+            html += htmlSegment;
+        }); 
+
+    }
+
+    let html_footer = '';
+    html_footer += '<div><button onclick="showInfo();location.reload();">Info</button>';
+    html_footer += '<button onclick="localStorage.clear();location.reload();">Clear</button></div>';
+
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
+    footer.innerHTML = html_footer;
 
     document.title = 'show databases';
 
@@ -536,7 +590,9 @@ async function showRow(db, table, id) {
     });
 
 
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
+    footer.innerHTML = `<button onclick="questiondeleteItem('${db}', '${table}', '${id}', 'sn')">Delete</button> </div>`;
 
     document.title = db +' '+ table +' '+ id;
 
@@ -602,6 +658,7 @@ async function patchForm(db, table, id, field, value) {
     html += '<input type="text" name="' + field + '" id="patch" value="' + value + '">';
     html += '<input type="submit" value="patch"></form>';
 
+    header.innerHTML = `<a href="?"><button type="button">Home</button></a>`;
     container.innerHTML = html;
 
     document.title = 'form patch ' + db +' '+ table +' '+ id +' ' + field ;
@@ -891,9 +948,7 @@ function router() {
             }
 
             return viewInventory('asset', 'inventory', column, fields, skip, batch);
-//async function viewInventory(db='asset', table='inventory', column='sn', fields=['sn','name'], skip=0, batch=10) {
-
-            
+            //async function viewInventory(db='asset', table='inventory', column='sn', fields=['sn','name'], skip=0, batch=10) {
 
         } else {
             //return viewInventory();
@@ -936,12 +991,19 @@ function router() {
 }
 
 function landing() {
+    if (origin === 'undefined' || origin === 'null') {
+        return Login();
+    }
+    if (appname === 'db-api-inventory') {
+        return viewInventory();
+    }
     return showDBs();
 }
 
+//-----------------------------------------------------------
+
 window.addEventListener('popstate', function(event) {
     console.log('event popstate activated');
-    //location.reload();
     history.go(-1);
 });
 
@@ -951,35 +1013,8 @@ window.addEventListener('hashchange', function(event) {
 
 //-----------------------------------------------------------
 
-// specific to the db-api, which uses python mysql.connector  
-// https://dev.mysql.com/doc/connectors/en/connector-python-connectargs.html
-
-const db_api_options = [ 'X-Host', 'X-Port', 'X-Db', 'X-Raise-Warnings', 'X-Get-Warnings', 'X-Auth-Plugin',
-                         'X-Pure', 'X-Unicode', 'X-Charset', 'X-Connection-Timeout' ];
-
-//-----------------------------------------------------------
-
-//const params = new URLSearchParams(window.location.search);
-const params = new URLSearchParams(location.search);
-
-const db     = params.get('db');
-const table  = params.get('table');
-const id     = params.get('id');
-const field  = params.get('field');
-const column = params.get('column');
-const form   = params.get('form');
-const value  = params.get('value');
-const view   = params.get('view');
-
-const origin = localStorage.getItem('origin');
-const base64 = localStorage.getItem('base64');
-
-const header    = document.querySelector('.page-header');
-const container = document.querySelector('.container');
-const footer    = document.querySelector('.page-footer');
-
 let run = router();
 
 const done = performance.now() - start;
-console.log('done ' + done);
 
+console.log(appname + ':' + done);
