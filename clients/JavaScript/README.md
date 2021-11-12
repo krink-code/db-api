@@ -14,11 +14,11 @@ fetch('http://127.0.0.1:8980/api', {
     .catch(err => document.write('Request Failed ', err));
 ```  
 
-use from source repo  
-
-```  
-<script src="https://gitlab.com/krink/db-api-server/-/raw/master/clients/JavaScript/js/db-api.js"  
-        crossorigin="anonymous">  
-</script>  
+github cdn jsdelivr
+``` 
+<script type="text/javascript" 
+    src="https://cdn.jsdelivr.net/gh/karlrink/db-api/clients/JavaScript/js/db-api.js" 
+    defer="defer" crossorigin="anonymous">
+</script>
 ```  
 
