@@ -38,3 +38,61 @@ button[class="search-button"] {
 }
 
 
+
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook */
+/* https://github.com/mdn/css-examples/blob/master/css-cookbook/sticky-footer--download.html */
+
+html {
+    height:100%;
+    box-sizing: border-box;
+}
+
+body {
+    height:100%;
+    background-color: #fff;
+    color: #333;
+    font: 1.2em / 1.5 Helvetica Neue, Helvetica, Arial, sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+* {
+    box-sizing: inherit;
+}
+
+section {
+    height: 100%
+}
+
+.wrapper {
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+.page-header,
+.page-footer {
+    background-color: rgb(75, 70, 74); 
+    /* background-color: blue; */
+    color: #fff;
+    padding: 20px;
+}
+
+.page-body {
+    padding: 20px;
+}
+
+.preview {
+    height: 400px;
+    overflow: auto;
+}
+
+.main-nav {
+    display: flex;
+}
+    
+.push {
+    margin-left: auto;
+}
+
+

@@ -1,3 +1,8 @@
+
+
+# https://developer.mozilla.org/en-US/docs/Web/CSS/Layout_cookbook/Sticky_footers
+
+cat <<-EOE > ../html/dbbrowser.html
 <!doctype html>
 <html lang="en">
 <head>
@@ -7,8 +12,17 @@
 
     <title></title>
 
-    <link rel="icon" href="" type="image/x-icon">
-    <link rel="stylesheet" href="css/db-api.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="stules.css">
+<style>
+
+EOE
+
+cat ../clients/JavaScript/css/db-api.css >> ../html/dbbrowser.html
+
+cat <<-EOE >> ../html/dbbrowser.html
+
+</style>
 </head>
 <body>
     <noscript>Please Enable JavaScript</noscript>
@@ -21,6 +35,17 @@
             <footer class="page-footer"></footer>
         </div>
     </section>
-<script src="js/db-api.js" type="text/javascript" defer="defer"></script>
+<script type="text/javascript" defer="defer">
+EOE
+
+cat ../clients/JavaScript/js/db-api.js >> ../html/dbbrowser.html
+
+cat <<-EOE >> ../html/dbbrowser.html
+
+</script>
 </body>
 </html>
+EOE
+
+
+
