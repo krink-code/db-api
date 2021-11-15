@@ -24,6 +24,7 @@ DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 GET    /api/<db>/<table>/count       # Count number of rows in a table
 ```   
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/69c153f001464d1bbe227d5e98f55925)](https://app.codacy.com/gh/karlrink/db-api?utm_source=github.com&utm_medium=referral&utm_content=karlrink/db-api&utm_campaign=Badge_Grade_Settings)
 [![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
