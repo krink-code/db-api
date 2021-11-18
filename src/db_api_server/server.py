@@ -1,7 +1,7 @@
 
 # -*- coding: utf-8 -*-
 
-__version__='1.0.4'
+__version__='1.0.4-0-20211114-0'
 
 from flask import Flask
 from flask import request
@@ -91,7 +91,7 @@ def get_many(db=None, table=None):
     if not request.query_string:
         SQL = 'SHOW FIELDS FROM ' + str(db) +'.'+ str(table)
     else:
-        SQL = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table) 
+        SQL = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table)
 
     if limit:
         SQL += ' LIMIT ' + str(limit)
@@ -164,7 +164,7 @@ def post_insert(db=None, table=None):
 
             columns=[]
             records=[]
-            for key,val in request.form.items():
+            for key in request.form.keys():
                 if key == 'credentials':
                     continue
                 columns.append(key)
@@ -195,7 +195,7 @@ def post_insert(db=None, table=None):
 
         return jsonify(status=401, message="Unauthorized", details="No valid authentication credentials for the target resource", method="POST", insert=False), 401
 
-    else: 
+    else:
 
         return jsonify(status=417, message="Expectation Failed", details="The server cannot meet the requirements of the Expect request-header field", method="POST", insert=False), 417
 
@@ -392,7 +392,7 @@ def sqlConnection(user=None, password=None):
 
 
 def main():
-    app.run(port=8980, debug=False)    
+    app.run(port=8980, debug=False)
 
 
 if __name__ == "__main__":
