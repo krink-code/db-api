@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-1'
+__version__ = '1.0.4-0-20211120-2'
 
 import base64
 import decimal
@@ -284,32 +284,32 @@ def put_replace(db=None, table=None):
 
 
 @APP.errorhandler(404)
-def not_found(error=None):
+def not_found(_e=None):
     """Not_Found: HTTP File Not Found 404."""
     message = { 'status': 404, 'errorType': 'Not Found: ' + request.url }
     return jsonify(message), 404
 
 
 @APP.errorhandler(Exception)
-def handle_exception(error):
+def handle_exception(_e):
     """Exception: HTTP Exception."""
-    if isinstance(error, HTTPException):
-        return jsonify(status=error.code, errorType="HTTP Exception", errorMessage=str(error)), error.code
+    if isinstance(_e, HTTPException):
+        return jsonify(status=_e.code, errorType="HTTP Exception", errorMessage=str(_e)), _e.code
 
-    if type(error).__name__ == 'OperationalError':
-        return jsonify(status=512, errorType="OperationalError", errorMessage=str(error)), 512
+    if type(_e).__name__ == 'OperationalError':
+        return jsonify(status=512, errorType="OperationalError", errorMessage=str(_e)), 512
 
-    if type(error).__name__ == 'InterfaceError':
-        return jsonify(status=512, errorType="InterfaceError", errorMessage=str(error)), 512
+    if type(_e).__name__ == 'InterfaceError':
+        return jsonify(status=512, errorType="InterfaceError", errorMessage=str(_e)), 512
 
-    if type(error).__name__ == 'ProgrammingError':
-        return jsonify(status=512, errorType="ProgrammingError", errorMessage=str(error)), 512
+    if type(_e).__name__ == 'ProgrammingError':
+        return jsonify(status=512, errorType="ProgrammingError", errorMessage=str(_e)), 512
 
-    if type(error).__name__ == 'AttributeError':
-        return jsonify(status=512, errorType="AttributeError", errorMessage=str(error)), 512
+    if type(_e).__name__ == 'AttributeError':
+        return jsonify(status=512, errorType="AttributeError", errorMessage=str(_e)), 512
 
     res = {'status': 500, 'errorType': 'Internal Server Error'}
-    res['errorMessage'] = str(error)
+    res['errorMessage'] = str(_e)
     return jsonify(res), 500
 
 
