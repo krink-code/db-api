@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-5'
+__version__ = '1.0.4-0-20211120-6'
 
 import base64
 import decimal
@@ -77,7 +77,7 @@ def show_tables(_db=None):
 @APP.route("/api/<db>/<table>", methods=['GET'])
 def get_many(_db=None, table=None):
     """GET: /api/<db>/<table> Show Database Table fields."""
-    """?query=true List rows of table. fields=id,name&limit=2,5."""
+    #?query=true List rows of table. fields=id,name&limit=2,5
     _db == request.view_args['db']
     table == request.view_args['table']
 
