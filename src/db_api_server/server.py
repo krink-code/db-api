@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-7'
+__version__ = '1.0.4-0-20211120-8'
 
 import base64
 import decimal
@@ -184,13 +184,22 @@ def post_insert(_db=None, table=None):
 
             if insert > 0:
                 return jsonify(status=201, message="Created", method="POST", insert=True), 201
+
             return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
 
-        _details = "No valid authentication credentials for the target resource"
-        return jsonify(status=401, message="Unauthorized", details=_details, method="POST", insert=False), 401
+        _return = {'status': 401,
+                   'message': 'Unauthorized',
+                   'details': 'No valid authentication credentials for the target resource',
+                   'method': 'POST',
+                   'insert': False}
+        return jsonify(_return), 401
 
-    _details = "The server cannot meet the requirements of the Expectation request-header field"
-    return jsonify(status=417, message="Expectation Failed", details=_details, method="POST", insert=False), 417
+    _return = {'status': 417,
+               'message': 'Expectation Failed',
+               'details': 'Server cannot meet Expectation: request-header field',
+               'method': 'POST',
+               'insert': False}
+    return jsonify(_return), 417
 
 
 @APP.route("/api/<db>/<table>/<key>", methods=['DELETE'])
@@ -227,9 +236,11 @@ def patch_one(_db=None, table=None, key=None):
     post = request.get_json()
 
     if len(post) > 1:
-        _return = {'status':405, 'errorType':'Method Not Allowed', 'errorMessage':'Single Key-Value Only', 'update':False}
+        _return = {'status': 405,
+                   'errorType': 'Method Not Allowed',
+                   'errorMessage': 'Single Key-Value Only',
+                   'update': False}
         return jsonify(_return), 405
-        #return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only", update=False), 405
 
     for _key in post:
         field = _key
