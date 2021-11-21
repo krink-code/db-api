@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-3'
+__version__ = '1.0.4-0-20211120-4'
 
 import base64
 import decimal
@@ -22,9 +22,10 @@ from flask_cors import CORS
 import mysql.connector
 
 class AppJSONEncoder(flask.json.JSONEncoder):
-
     """app: json encoder."""
+
     def default(self, obj):
+        """default: self."""
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string.
             return str(obj)
@@ -75,9 +76,7 @@ def show_tables(db=None):
 
 @APP.route("/api/<db>/<table>", methods=['GET'])
 def get_many(db=None, table=None):
-    """GET: /api/<db>/<table> Show Database Table fields
-       GET: /api/<db>/<table>?query=true List rows of table. fields=id,name&limit=2,5."""
-
+    """GET: /api/<db>/<table> Show Database Table fields. ?query=true List rows of table. fields=id,name&limit=2,5."""
     db == request.view_args['db']
     table == request.view_args['table']
 
@@ -102,9 +101,7 @@ def get_many(db=None, table=None):
 
 @APP.route("/api/<db>/<table>/<key>", methods=['GET'])
 def get_one(db=None, table=None, key=None):
-    """GET: /api/<db>/<table>:id Retrieve a row by primary key
-       GET: /api/<db>/<table>/:id?fields= fields=&column=."""
-
+    """GET: /api/<db>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
     db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
@@ -124,9 +121,7 @@ def get_one(db=None, table=None, key=None):
 
 @APP.route("/api/<db>/<table>", methods=['POST'])
 def post_insert(db=None, table=None):
-    """POST: /api/<db>/<table> Create a new row
-                               key1=val1,key2=val2."""
-
+    """POST: /api/<db>/<table> Create a new row. key1=val1,key2=val2."""
     db == request.view_args['db']
     table == request.view_args['table']
 
@@ -198,9 +193,7 @@ def post_insert(db=None, table=None):
 
 @APP.route("/api/<db>/<table>/<key>", methods=['DELETE'])
 def delete_one(db=None, table=None, key=None):
-    """DELETE: /api/<db>/<table>:id Delete a row by primary key
-       DELETE: /api/<db>/<table>/:id?column=."""
-
+    """DELETE: /api/<db>/<table>:id Delete a row by primary key id?column=."""
     db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
@@ -219,9 +212,7 @@ def delete_one(db=None, table=None, key=None):
 
 @APP.route("/api/<db>/<table>/<key>", methods=['PATCH'])
 def patch_one(db=None, table=None, key=None):
-    """PATCH: /api/<db>/<table>:id Update row element by primary key (single key/val)
-       PATCH: /api/<db>/<table>/:id?column=."""
-
+    """PATCH: /api/<db>/<table>:id Update row element by primary key (single key/val) id?column=."""
     db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
@@ -253,9 +244,7 @@ def patch_one(db=None, table=None, key=None):
 
 @APP.route("/api/<db>/<table>", methods=['PUT'])
 def put_replace(db=None, table=None):
-    """PUT: /api/<db>/<table> Replace existing row with new row
-                              key1=val1,key2=val2."""
-
+    """PUT: /api/<db>/<table> Replace existing row with new row. key1=val1,key2=val2."""
     db == request.view_args['db']
     table == request.view_args['table']
 
