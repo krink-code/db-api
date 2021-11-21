@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-2'
+__version__ = '1.0.4-0-20211120-3'
 
 import base64
 import decimal

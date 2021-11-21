@@ -8,4 +8,3 @@ from src.db_api_server.server import APP
 
 if __name__ == "__main__":
     APP.run()
-
