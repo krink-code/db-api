@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-8'
+__version__ = '1.0.4-0-20211120-9'
 
 import base64
 import decimal
@@ -136,7 +136,7 @@ def post_insert(_db=None, table=None):
         fields = ",".join([str(key) for key in post])
         places = ",".join([str(key) for key in placeholders])
 
-        records=[]
+        records = []
         for key in post:
             records.append(post[key])
 
@@ -155,8 +155,8 @@ def post_insert(_db=None, table=None):
 
         if credentials:
 
-            columns=[]
-            records=[]
+            columns = []
+            records = []
             for key in request.form.keys():
                 if key == 'credentials':
                     continue
@@ -273,7 +273,7 @@ def put_replace(_db=None, table=None):
     fields = ",".join([str(key) for key in post])
     places = ",".join([str(key) for key in placeholders])
 
-    records=[]
+    records = []
     for key in post:
         records.append(post[key])
 
@@ -290,7 +290,7 @@ def put_replace(_db=None, table=None):
 @APP.errorhandler(404)
 def not_found(_e=None):
     """Not_Found: HTTP File Not Found 404."""
-    message = { 'status': 404, 'errorType': 'Not Found: ' + request.url }
+    message = {'status': 404, 'errorType': 'Not Found: ' + request.url}
     return jsonify(message), 404
 
 
