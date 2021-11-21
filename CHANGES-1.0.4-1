@@ -12,4 +12,7 @@ no-member (E1101) - Method 'logger' has no 'setLevel' member
 invalid-name (C0103) - Variable name "SQL" doesn't conform to snake_case naming style
 bad-whitespace (C0326) - Exactly one space required before assignment 
 B101: Test for use of assert - enclosed code will be removed when compiling to optimised byte code
-
+PEP 257 docstring style checker - 1 blank line required before class docstring (found 0) (D203) 
+pointless-string-statement (W0105) - String statement has no effect 
+pep8 - expected 2 blank lines after class or function definition, found 1 (E305) 
+ungrouped-imports (C0412) - Imports from package flask are not grouped
