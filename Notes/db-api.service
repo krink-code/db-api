@@ -9,12 +9,9 @@ User=nobody
 Group=nogroup
 WorkingDirectory=/opt/db-api
 Environment="PATH=/opt/db-api/env/bin"
-ExecStart=/opt/db-api/env/bin/gunicorn --log-level=info --access-logfile /var/log/db-api/db-api-access.log -w 3 --bind 0.0.0.0:8980 -m 007 --chdir /opt/db-api wsgi:app 
-
+ExecStart=/opt/db-api/env/bin/gunicorn --log-level=info --access-logfile /var/log/db-api/db-api-access.log -w 3 --bind 0.0.0.0:8980 -m 007 --chdir /opt/db-api wsgi:APP
 #pip3 install db-api-server
 #ExecStart=python3.8 -m db_api_server
 
 [Install]
 WantedBy=multi-user.target
-
-

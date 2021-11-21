@@ -1,8 +1,10 @@
 
-virtualenv --python python3.8 env
+#virtualenv --python python3.8 env
+python3 -m venv python3.8 env
 source env/bin/activate
 pip3 install -r requirements.txt
 pip3 install gunicorn
-python3 main.py
+#python3 main.py
+python3 src/db_api_server/server.py
 
 

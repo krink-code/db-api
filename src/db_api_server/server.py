@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-10'
+__version__ = '1.0.4-0-20211121-0'
 
 import base64
 import decimal
@@ -26,6 +26,7 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 
     def default(self, obj):
         """default: self."""
+
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string.
             return str(obj)
@@ -40,7 +41,7 @@ class AppJSONEncoder(flask.json.JSONEncoder):
                     return str(obj)
             except UnicodeDecodeError:
                 return str(obj)
-        return super(AppJSONEncoder, self).default(obj)
+        return super().default(obj)
 
 
 APP = Flask(__name__)
