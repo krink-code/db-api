@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-4'
+__version__ = '1.0.4-0-20211120-5'
 
 import base64
 import decimal
@@ -66,27 +66,28 @@ def show_databases():
 
 
 @APP.route("/api/<db>", methods=['GET'])
-def show_tables(db=None):
+def show_tables(_db=None):
     """GET: /api/<db> Show Database Tables."""
-    db == request.view_args['db']
-    sql = 'SHOW TABLES FROM ' + str(db)
+    _db == request.view_args['db']
+    sql = 'SHOW TABLES FROM ' + str(_db)
     rows = fetchall(sql)
     return jsonify(rows), 200
 
 
 @APP.route("/api/<db>/<table>", methods=['GET'])
-def get_many(db=None, table=None):
-    """GET: /api/<db>/<table> Show Database Table fields. ?query=true List rows of table. fields=id,name&limit=2,5."""
-    db == request.view_args['db']
+def get_many(_db=None, table=None):
+    """GET: /api/<db>/<table> Show Database Table fields."""
+    """?query=true List rows of table. fields=id,name&limit=2,5."""
+    _db == request.view_args['db']
     table == request.view_args['table']
 
     fields = request.args.get("fields", '*')
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        sql = 'SHOW FIELDS FROM ' + str(db) +'.'+ str(table)
+        sql = 'SHOW FIELDS FROM ' + str(_db) +'.'+ str(table)
     else:
-        sql = 'SELECT '+ str(fields) +' FROM '+ str(db) +'.'+ str(table)
+        sql = 'SELECT '+ str(fields) +' FROM '+ str(_db) +'.'+ str(table)
 
     if limit:
         sql += ' LIMIT ' + str(limit)
@@ -95,34 +96,35 @@ def get_many(db=None, table=None):
 
     if rows:
         return jsonify(rows), 200
-    else:
-        return jsonify(status=404, message="Not Found"), 404
+
+    return jsonify(status=404, message="Not Found"), 404
 
 
 @APP.route("/api/<db>/<table>/<key>", methods=['GET'])
-def get_one(db=None, table=None, key=None):
+def get_one(_db=None, table=None, key=None):
     """GET: /api/<db>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
-    db == request.view_args['db']
+    _db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
 
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
 
-    sql = "SELECT "+ str(fields) +" FROM "+ str(db) +"."+ str(table) +" WHERE "+str(column)+"='"+str(key)+"'"
+    sql = "SELECT " + str(fields) + " FROM " + str(_db) + "." + str(table)
+    sql += " WHERE " + str(column) + "='" + str(key) + "'"
 
     row = fetchone(sql)
 
     if row:
         return jsonify(row), 200
-    else:
-        return jsonify(status=404, message="Not Found"), 404
+
+    return jsonify(status=404, message="Not Found"), 404
 
 
 @APP.route("/api/<db>/<table>", methods=['POST'])
-def post_insert(db=None, table=None):
+def post_insert(_db=None, table=None):
     """POST: /api/<db>/<table> Create a new row. key1=val1,key2=val2."""
-    db == request.view_args['db']
+    _db == request.view_args['db']
     table == request.view_args['table']
 
     if request.is_json:
@@ -138,16 +140,16 @@ def post_insert(db=None, table=None):
         for key in post:
             records.append(post[key])
 
-        sql = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+        sql = "INSERT INTO " +str(_db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
         insert = sqlexec(sql, records)
 
         if insert > 0:
             return jsonify(status=201, message="Created", insert=True), 201
-        else:
-            return jsonify(status=461, message="Failed Create", insert=False), 461
 
-    elif request.form:
+        return jsonify(status=461, message="Failed Create", insert=False), 461
+
+    if request.form:
 
         credentials = request.form.get('credentials', None)
 
@@ -175,45 +177,45 @@ def post_insert(db=None, table=None):
             base64_user = untoken.split(":", 1)[0]
             base64_pass = untoken.split(":", 1)[1]
 
-            sql = "INSERT INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+            sql = "INSERT INTO " + str(_db) + "." + str(table) + " (" + str(fields)
+            sql += ") VALUES (" + str(places) + ")"
 
             insert = sqlinsert(sql, records, base64_user, base64_pass)
 
             if insert > 0:
                 return jsonify(status=201, message="Created", method="POST", insert=True), 201
-            else:
-                return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
+            return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
 
-        return jsonify(status=401, message="Unauthorized", details="No valid authentication credentials for the target resource", method="POST", insert=False), 401
+        _details = "No valid authentication credentials for the target resource"
+        return jsonify(status=401, message="Unauthorized", details=_details, method="POST", insert=False), 401
 
-    else:
-
-        return jsonify(status=417, message="Expectation Failed", details="The server cannot meet the requirements of the Expect request-header field", method="POST", insert=False), 417
+    _details = "The server cannot meet the requirements of the Expectation request-header field"
+    return jsonify(status=417, message="Expectation Failed", details=_details, method="POST", insert=False), 417
 
 
 @APP.route("/api/<db>/<table>/<key>", methods=['DELETE'])
-def delete_one(db=None, table=None, key=None):
+def delete_one(_db=None, table=None, key=None):
     """DELETE: /api/<db>/<table>:id Delete a row by primary key id?column=."""
-    db == request.view_args['db']
+    _db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
 
     column = request.args.get("column", 'id')
 
-    sql = "DELETE FROM "+str(db)+"."+str(table)+" WHERE "+str(column)+"='"+str(key)+"'"
+    sql = "DELETE FROM "+str(_db)+"."+str(table)+" WHERE "+str(column)+"='"+str(key)+"'"
 
     delete = sqlcommit(sql)
 
     if delete > 0:
         return jsonify(status=211, message="Deleted", delete=True), 211
-    else:
-        return jsonify(status=466, message="Failed Delete", delete=False), 466
+
+    return jsonify(status=466, message="Failed Delete", delete=False), 466
 
 
 @APP.route("/api/<db>/<table>/<key>", methods=['PATCH'])
-def patch_one(db=None, table=None, key=None):
+def patch_one(_db=None, table=None, key=None):
     """PATCH: /api/<db>/<table>:id Update row element by primary key (single key/val) id?column=."""
-    db == request.view_args['db']
+    _db == request.view_args['db']
     table == request.view_args['table']
     key == request.view_args['key']
 
@@ -225,27 +227,29 @@ def patch_one(db=None, table=None, key=None):
     post = request.get_json()
 
     if len(post) > 1:
-        return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only", update=False), 405
+        _return = {'status':405, 'errorType':'Method Not Allowed', 'errorMessage':'Single Key-Value Only', 'update':False}
+        return jsonify(_return), 405
+        #return jsonify(status=405, errorType="Method Not Allowed", errorMessage="Single Key-Value Only", update=False), 405
 
     for _key in post:
         field = _key
         value = post[_key]
 
-    sql = "UPDATE "+str(db)+"."+str(table)+" SET "+str(field)+"='"+str(value)+"' WHERE "+str(column)+"='"+str(key)+"'"
+    sql = "UPDATE " + str(_db) + "." + str(table) + " SET " + str(field) + "='" + str(value)
+    sql += "' WHERE " + str(column) + "='" + str(key) + "'"
 
     update = sqlcommit(sql)
 
     if update > 0:
-        #return jsonify(status=204, message="No Content"), 204
         return jsonify(status=201, message="Created", update=True), 201
-    else:
-        return jsonify(status=465, message="Failed Update", update=False), 465
+
+    return jsonify(status=465, message="Failed Update", update=False), 465
 
 
 @APP.route("/api/<db>/<table>", methods=['PUT'])
-def put_replace(db=None, table=None):
+def put_replace(_db=None, table=None):
     """PUT: /api/<db>/<table> Replace existing row with new row. key1=val1,key2=val2."""
-    db == request.view_args['db']
+    _db == request.view_args['db']
     table == request.view_args['table']
 
     if not request.headers['Content-Type'] == 'application/json':
@@ -262,14 +266,14 @@ def put_replace(db=None, table=None):
     for key in post:
         records.append(post[key])
 
-    sql = "REPLACE INTO " +str(db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+    sql = "REPLACE INTO " +str(_db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
 
     replace = sqlexec(sql, records)
 
     if replace > 0:
         return jsonify(status=201, message="Created", replace=True), 201
-    else:
-        return jsonify(status=461, message="Failed Create", replace=False), 461
+
+    return jsonify(status=461, message="Failed Create", replace=False), 461
 
 
 @APP.errorhandler(404)
@@ -382,8 +386,8 @@ def sql_connection(user=None, password=None):
         'charset':                request.headers.get('X-Charset', 'utf8'),
         'connection_timeout': int(request.headers.get('X-Connection-Timeout', 60)),
     }
-    db = mysql.connector.connect(**config)
-    return db
+    _db = mysql.connector.connect(**config)
+    return _db
 
 
 def main():
