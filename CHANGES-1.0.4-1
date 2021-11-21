@@ -1,0 +1,15 @@
+# CHANGES-1.0.4-1  
+
+missing-docstring (C0111) - Missing function docstring
+PEP 257 docstring style checker - First line should end with a period, question mark, or exclamation point (not 'd') (D415)
+no-absolute-import (W1618) - import missing `from __future__ import absolute_import`
+https://pycodequ.al/docs/pylint-messages/c0103-invalid-name.html
+bad-whitespace (C0326) - Exactly one space required around assignment
+Imports from package flask are not grouped
+standard import "import base64" should be placed before "from flask import Flask"
+invalid-name (C0103) - Constant name "app" doesn't conform to UPPER_CASE naming style
+no-member (E1101) - Method 'logger' has no 'setLevel' member
+invalid-name (C0103) - Variable name "SQL" doesn't conform to snake_case naming style
+bad-whitespace (C0326) - Exactly one space required before assignment 
+B101: Test for use of assert - enclosed code will be removed when compiling to optimised byte code
+
