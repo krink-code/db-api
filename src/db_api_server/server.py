@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211120-9'
+__version__ = '1.0.4-0-20211120-10'
 
 import base64
 import decimal
@@ -68,7 +68,7 @@ def show_databases():
 @APP.route("/api/<db>", methods=['GET'])
 def show_tables(_db=None):
     """GET: /api/<db> Show Database Tables."""
-    _db == request.view_args['db']
+    _db = request.view_args['db']
     sql = 'SHOW TABLES FROM ' + str(_db)
     rows = fetchall(sql)
     return jsonify(rows), 200
@@ -78,8 +78,8 @@ def show_tables(_db=None):
 def get_many(_db=None, table=None):
     """GET: /api/<db>/<table> Show Database Table fields."""
     #?query=true List rows of table. fields=id,name&limit=2,5
-    _db == request.view_args['db']
-    table == request.view_args['table']
+    _db = request.view_args['db']
+    table = request.view_args['table']
 
     fields = request.args.get("fields", '*')
     limit = request.args.get("limit", None)
@@ -103,9 +103,9 @@ def get_many(_db=None, table=None):
 @APP.route("/api/<db>/<table>/<key>", methods=['GET'])
 def get_one(_db=None, table=None, key=None):
     """GET: /api/<db>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
-    _db == request.view_args['db']
-    table == request.view_args['table']
-    key == request.view_args['key']
+    _db = request.view_args['db']
+    table = request.view_args['table']
+    key = request.view_args['key']
 
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
@@ -124,8 +124,8 @@ def get_one(_db=None, table=None, key=None):
 @APP.route("/api/<db>/<table>", methods=['POST'])
 def post_insert(_db=None, table=None):
     """POST: /api/<db>/<table> Create a new row. key1=val1,key2=val2."""
-    _db == request.view_args['db']
-    table == request.view_args['table']
+    _db = request.view_args['db']
+    table = request.view_args['table']
 
     if request.is_json:
 
@@ -205,9 +205,9 @@ def post_insert(_db=None, table=None):
 @APP.route("/api/<db>/<table>/<key>", methods=['DELETE'])
 def delete_one(_db=None, table=None, key=None):
     """DELETE: /api/<db>/<table>:id Delete a row by primary key id?column=."""
-    _db == request.view_args['db']
-    table == request.view_args['table']
-    key == request.view_args['key']
+    _db = request.view_args['db']
+    table = request.view_args['table']
+    key = request.view_args['key']
 
     column = request.args.get("column", 'id')
 
@@ -224,9 +224,9 @@ def delete_one(_db=None, table=None, key=None):
 @APP.route("/api/<db>/<table>/<key>", methods=['PATCH'])
 def patch_one(_db=None, table=None, key=None):
     """PATCH: /api/<db>/<table>:id Update row element by primary key (single key/val) id?column=."""
-    _db == request.view_args['db']
-    table == request.view_args['table']
-    key == request.view_args['key']
+    _db = request.view_args['db']
+    table = request.view_args['table']
+    key = request.view_args['key']
 
     column = request.args.get("column", 'id')
 
@@ -260,8 +260,8 @@ def patch_one(_db=None, table=None, key=None):
 @APP.route("/api/<db>/<table>", methods=['PUT'])
 def put_replace(_db=None, table=None):
     """PUT: /api/<db>/<table> Replace existing row with new row. key1=val1,key2=val2."""
-    _db == request.view_args['db']
-    table == request.view_args['table']
+    _db = request.view_args['db']
+    table = request.view_args['table']
 
     if not request.headers['Content-Type'] == 'application/json':
         return jsonify(status=412, errorType="Precondition Failed"), 412
