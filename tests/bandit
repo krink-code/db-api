@@ -1,0 +1,6 @@
+
+#pip3 install bandit
+
+bandit -r ../src/db_api_server/server.py
+
+

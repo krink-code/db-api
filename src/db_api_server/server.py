@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211121-2'
+__version__ = '1.0.4-0-20211121-3'
 
 import base64
 import decimal
@@ -85,15 +85,12 @@ def get_many(database=None, table=None):
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        #sql = 'SHOW FIELDS FROM ' + str(database) +'.'+ str(table)
         sql = 'SHOW FIELDS FROM {database}.{table}'.format(database=database, table=table)
     else:
-        #sql = 'SELECT '+ str(fields) +' FROM '+ str(database) +'.'+ str(table)
         sql = 'SELECT {fields} FROM {database}.{table}'.format(fields=fields,
                                                                database=database,
                                                                table=table)
     if limit:
-        #sql += ' LIMIT ' + str(limit)
         sql += ' LIMIT {limit}'.format(limit=limit)
 
     rows = fetchall(sql)
@@ -113,10 +110,6 @@ def get_one(database=None, table=None, key=None):
 
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
-
-    #sql = "SELECT " + str(fields) + " FROM " + str(database) + "." + str(table)
-    #sql += " WHERE " + str(column) + "='" + str(key) + "'"
-    #row = fetchone(sql)
 
     sql = "SELECT {fields} FROM {database}.{table} WHERE {column} = %s".format(fields=fields,
                                                                                database=database,
@@ -193,9 +186,6 @@ def post_insert(database=None, table=None):
             base64_user = untoken.split(":", 1)[0]
             base64_pass = untoken.split(":", 1)[1]
 
-            #sql = "INSERT INTO " + str(database) + "." + str(table) + " (" + str(fields)
-            #sql += ") VALUES (" + str(places) + ")"
-
             sql = "INSERT INTO {database}.{table} ( {fields} )".format(database=database,
                                                                        table=table,
                                                                        fields=fields)
@@ -231,9 +221,6 @@ def delete_one(database=None, table=None, key=None):
     key = request.view_args['key']
 
     column = request.args.get("column", 'id')
-
-    #sql = "DELETE FROM "+str(database)+"."+str(table)+" WHERE "+str(column)+"='"+str(key)+"'"
-    #delete = sqlcommit(sql)
 
     sql = "DELETE FROM {database}.{table} WHERE {column} = %s".format(database=database,
                                                                       table=table,
@@ -278,10 +265,6 @@ def patch_one(database=None, table=None, key=None):
     for _key in post:
         field = _key
         value = post[_key]
-
-    #sql = "UPDATE " + str(database) + "." + str(table) + " SET " + str(field) + "='" + str(value)
-    #sql += "' WHERE " + str(column) + "='" + str(key) + "'"
-    #update = sqlcommit(sql)
 
     sql = "UPDATE {database}.{table} SET {field} = %s WHERE {column} = %s".format(database=database,
                                                                                   table=table,
