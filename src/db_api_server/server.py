@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211121-0'
+__version__ = '1.0.4-0-20211121-1'
 
 import base64
 import decimal
@@ -26,7 +26,6 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 
     def default(self, obj):
         """default: self."""
-
         if isinstance(obj, decimal.Decimal):
             # Convert decimal instance to string.
             return str(obj)
@@ -66,32 +65,36 @@ def show_databases():
     return jsonify(rows), 200
 
 
-@APP.route("/api/<db>", methods=['GET'])
-def show_tables(_db=None):
-    """GET: /api/<db> Show Database Tables."""
-    _db = request.view_args['db']
-    sql = 'SHOW TABLES FROM ' + str(_db)
+@APP.route("/api/<database>", methods=['GET'])
+def show_tables(database=None):
+    """GET: /api/<database> Show Database Tables."""
+    database = request.view_args['database']
+    sql = 'SHOW TABLES FROM {database}'.format(database=database)
     rows = fetchall(sql)
     return jsonify(rows), 200
 
 
-@APP.route("/api/<db>/<table>", methods=['GET'])
-def get_many(_db=None, table=None):
-    """GET: /api/<db>/<table> Show Database Table fields."""
+@APP.route("/api/<database>/<table>", methods=['GET'])
+def get_many(database=None, table=None):
+    """GET: /api/<database>/<table> Show Database Table fields."""
     #?query=true List rows of table. fields=id,name&limit=2,5
-    _db = request.view_args['db']
+    database = request.view_args['database']
     table = request.view_args['table']
 
     fields = request.args.get("fields", '*')
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        sql = 'SHOW FIELDS FROM ' + str(_db) +'.'+ str(table)
+        #sql = 'SHOW FIELDS FROM ' + str(database) +'.'+ str(table)
+        sql = 'SHOW FIELDS FROM {database}.{table}'.format(database=database, table=table)
     else:
-        sql = 'SELECT '+ str(fields) +' FROM '+ str(_db) +'.'+ str(table)
-
+        #sql = 'SELECT '+ str(fields) +' FROM '+ str(database) +'.'+ str(table)
+        sql = 'SELECT {fields} FROM {database}.{table}'.format(fields=fields,
+                                                               database=database,
+                                                               table=table)
     if limit:
-        sql += ' LIMIT ' + str(limit)
+        #sql += ' LIMIT ' + str(limit)
+        sql += ' LIMIT {limit}'.format(limit=limit)
 
     rows = fetchall(sql)
 
@@ -101,20 +104,31 @@ def get_many(_db=None, table=None):
     return jsonify(status=404, message="Not Found"), 404
 
 
-@APP.route("/api/<db>/<table>/<key>", methods=['GET'])
-def get_one(_db=None, table=None, key=None):
-    """GET: /api/<db>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
-    _db = request.view_args['db']
+@APP.route("/api/<database>/<table>/<key>", methods=['GET'])
+def get_one(database=None, table=None, key=None):
+    """GET: /api/<database>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
+    database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
 
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
 
-    sql = "SELECT " + str(fields) + " FROM " + str(_db) + "." + str(table)
-    sql += " WHERE " + str(column) + "='" + str(key) + "'"
+    #sql = "SELECT " + str(fields) + " FROM " + str(database) + "." + str(table)
+    #sql += " WHERE " + str(column) + "='" + str(key) + "'"
+    #row = fetchone(sql)
 
-    row = fetchone(sql)
+    sql = "SELECT {fields} FROM {database}.{table} WHERE {column} = %s".format(fields=fields,
+                                                                               database=database,
+                                                                               table=table,
+                                                                               column=column)
+    cnx = sql_connection()
+    cur = cnx.cursor(buffered=True)
+    cur.execute(sql, (key,))
+
+    row = cur.fetchone()
+    cur.close()
+    cnx.close()
 
     if row:
         return jsonify(row), 200
@@ -122,10 +136,10 @@ def get_one(_db=None, table=None, key=None):
     return jsonify(status=404, message="Not Found"), 404
 
 
-@APP.route("/api/<db>/<table>", methods=['POST'])
-def post_insert(_db=None, table=None):
-    """POST: /api/<db>/<table> Create a new row. key1=val1,key2=val2."""
-    _db = request.view_args['db']
+@APP.route("/api/<database>/<table>", methods=['POST'])
+def post_insert(database=None, table=None):
+    """POST: /api/<database>/<table> Create a new row. key1=val1,key2=val2."""
+    database = request.view_args['database']
     table = request.view_args['table']
 
     if request.is_json:
@@ -141,8 +155,9 @@ def post_insert(_db=None, table=None):
         for key in post:
             records.append(post[key])
 
-        sql = "INSERT INTO " +str(_db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
-
+        sql = "INSERT INTO {database}.{table} VALUES ( {places} )".format(database=database,
+                                                                          table=table,
+                                                                          places=places)
         insert = sqlexec(sql, records)
 
         if insert > 0:
@@ -178,8 +193,13 @@ def post_insert(_db=None, table=None):
             base64_user = untoken.split(":", 1)[0]
             base64_pass = untoken.split(":", 1)[1]
 
-            sql = "INSERT INTO " + str(_db) + "." + str(table) + " (" + str(fields)
-            sql += ") VALUES (" + str(places) + ")"
+            #sql = "INSERT INTO " + str(database) + "." + str(table) + " (" + str(fields)
+            #sql += ") VALUES (" + str(places) + ")"
+
+            sql = "INSERT INTO {database}.{table} ( {fields} )".format(database=database,
+                                                                       table=table,
+                                                                       fields=fields)
+            sql += "VALUES ( {places} )".format(places=places)
 
             insert = sqlinsert(sql, records, base64_user, base64_pass)
 
@@ -203,29 +223,41 @@ def post_insert(_db=None, table=None):
     return jsonify(_return), 417
 
 
-@APP.route("/api/<db>/<table>/<key>", methods=['DELETE'])
-def delete_one(_db=None, table=None, key=None):
-    """DELETE: /api/<db>/<table>:id Delete a row by primary key id?column=."""
-    _db = request.view_args['db']
+@APP.route("/api/<database>/<table>/<key>", methods=['DELETE'])
+def delete_one(database=None, table=None, key=None):
+    """DELETE: /api/<database>/<table>:id Delete a row by primary key id?column=."""
+    database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
 
     column = request.args.get("column", 'id')
 
-    sql = "DELETE FROM "+str(_db)+"."+str(table)+" WHERE "+str(column)+"='"+str(key)+"'"
+    #sql = "DELETE FROM "+str(database)+"."+str(table)+" WHERE "+str(column)+"='"+str(key)+"'"
+    #delete = sqlcommit(sql)
 
-    delete = sqlcommit(sql)
+    sql = "DELETE FROM {database}.{table} WHERE {column} = %s".format(database=database,
+                                                                      table=table,
+                                                                      column=column)
+    cnx = sql_connection()
+    cur = cnx.cursor(buffered=True)
+    cur.execute(sql, (key,))
 
-    if delete > 0:
+    cnx.commit()
+    rowcount = cur.rowcount
+    cur.close()
+    cnx.close()
+
+    if rowcount > 0:
         return jsonify(status=211, message="Deleted", delete=True), 211
 
     return jsonify(status=466, message="Failed Delete", delete=False), 466
 
 
-@APP.route("/api/<db>/<table>/<key>", methods=['PATCH'])
-def patch_one(_db=None, table=None, key=None):
-    """PATCH: /api/<db>/<table>:id Update row element by primary key (single key/val) id?column=."""
-    _db = request.view_args['db']
+@APP.route("/api/<database>/<table>/<key>", methods=['PATCH'])
+def patch_one(database=None, table=None, key=None):
+    """PATCH: /api/<database>/<table>:id Update row element by primary key."""
+    # (single key/val) id?column=
+    database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
 
@@ -247,21 +279,33 @@ def patch_one(_db=None, table=None, key=None):
         field = _key
         value = post[_key]
 
-    sql = "UPDATE " + str(_db) + "." + str(table) + " SET " + str(field) + "='" + str(value)
-    sql += "' WHERE " + str(column) + "='" + str(key) + "'"
+    #sql = "UPDATE " + str(database) + "." + str(table) + " SET " + str(field) + "='" + str(value)
+    #sql += "' WHERE " + str(column) + "='" + str(key) + "'"
+    #update = sqlcommit(sql)
 
-    update = sqlcommit(sql)
+    sql = "UPDATE {database}.{table} SET {field} = %s WHERE {column} = %s".format(database=database,
+                                                                                  table=table,
+                                                                                  field=field,
+                                                                                  column=column)
+    cnx = sql_connection()
+    cur = cnx.cursor(buffered=True)
+    cur.execute(sql, (value,key))
 
-    if update > 0:
+    cnx.commit()
+    rowcount = cur.rowcount
+    cur.close()
+    cnx.close()
+
+    if rowcount > 0:
         return jsonify(status=201, message="Created", update=True), 201
 
     return jsonify(status=465, message="Failed Update", update=False), 465
 
 
-@APP.route("/api/<db>/<table>", methods=['PUT'])
-def put_replace(_db=None, table=None):
-    """PUT: /api/<db>/<table> Replace existing row with new row. key1=val1,key2=val2."""
-    _db = request.view_args['db']
+@APP.route("/api/<database>/<table>", methods=['PUT'])
+def put_replace(database=None, table=None):
+    """PUT: /api/<database>/<table> Replace existing row with new row. key1=val1,key2=val2."""
+    database = request.view_args['database']
     table = request.view_args['table']
 
     if not request.headers['Content-Type'] == 'application/json':
@@ -278,7 +322,10 @@ def put_replace(_db=None, table=None):
     for key in post:
         records.append(post[key])
 
-    sql = "REPLACE INTO " +str(_db)+"."+str(table)+" ("+str(fields)+") VALUES ("+str(places)+")"
+    sql = "REPLACE INTO {database}.{table} ( {fields} )".format(database=database,
+                                                                table=table,
+                                                                fields=fields)
+    sql += "VALUES ( {places} )".format(places=places)
 
     replace = sqlexec(sql, records)
 
@@ -316,6 +363,17 @@ def handle_exception(_e):
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(_e)
     return jsonify(res), 500
+
+
+def fetchall2(sql, stmt):
+    """sql: fetchall."""
+    cnx = sql_connection()
+    cur = cnx.cursor(buffered=True)
+    cur.execute(sql, stmt)
+    rows = cur.fetchall()
+    cur.close()
+    cnx.close()
+    return rows
 
 
 def fetchall(sql):

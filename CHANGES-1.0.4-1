@@ -16,3 +16,7 @@ PEP 257 docstring style checker - 1 blank line required before class docstring (
 pointless-string-statement (W0105) - String statement has no effect 
 pep8 - expected 2 blank lines after class or function definition, found 1 (E305) 
 ungrouped-imports (C0412) - Imports from package flask are not grouped
+
+B608: Test for SQL injection - hardcoded_sql_expressions
+
+

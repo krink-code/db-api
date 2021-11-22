@@ -6,3 +6,5 @@ python3 -m pylint ../src/db_api_server/__init__.py
 python3 -m pylint ../src/db_api_server/__main__.py
 
 
+#https://vald-phoenix.github.io/pylint-errors/plerr/errors/classes/W0221.html
+
