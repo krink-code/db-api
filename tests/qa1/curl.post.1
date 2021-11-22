@@ -1,0 +1,7 @@
+
+curl --user dbuser:dbpass \
+     -X POST \
+     -H "Content-Type: application/json" \
+     --data '{"name":"hello","description":"inserted via curl"}' \
+     "http://127.0.0.1:8980/api/example/table1"
+

@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211122-0'
+__version__ = '1.0.4-0-20211122-1'
 
 import base64
 import decimal
@@ -69,7 +69,7 @@ def show_databases():
 def show_tables(database=None):
     """GET: /api/<database> Show Database Tables."""
     database = request.view_args['database']
-    sql = 'SHOW TABLES FROM {database}'.format(database=database)
+    sql = 'SHOW TABLES FROM ' + database
     rows = fetchall(sql)
     return jsonify(rows), 200
 
@@ -85,13 +85,12 @@ def get_many(database=None, table=None):
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        sql = 'SHOW FIELDS FROM {database}.{table}'.format(database=database, table=table)
+        sql = 'SHOW FIELDS FROM ' + database +'.'+ table
     else:
-        sql = 'SELECT {fields} FROM {database}.{table}'.format(fields=fields,
-                                                               database=database,
-                                                               table=table)
+        sql = 'SELECT '+ fields +' FROM '+ database +'.'+ table
+
     if limit:
-        sql += ' LIMIT {limit}'.format(limit=limit)
+        sql += ' LIMIT ' + limit
 
     rows = fetchall(sql)
 
@@ -111,17 +110,9 @@ def get_one(database=None, table=None, key=None):
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
 
-    sql = "SELECT {fields} FROM {database}.{table} WHERE {column} = %s".format(fields=fields,
-                                                                               database=database,
-                                                                               table=table,
-                                                                               column=column)
-    cnx = sql_connection()
-    cur = cnx.cursor(buffered=True)
-    cur.execute(sql, (key,))
+    sql = "SELECT "+ fields +" FROM "+ database +"."+ table +" WHERE "+ column +"='"+ key +"'"
 
-    row = cur.fetchone()
-    cur.close()
-    cnx.close()
+    row = fetchone(sql)
 
     if row:
         return jsonify(row), 200
@@ -148,9 +139,8 @@ def post_insert(database=None, table=None):
         for key in post:
             records.append(post[key])
 
-        sql = "INSERT INTO {database}.{table} VALUES ( {places} )".format(database=database,
-                                                                          table=table,
-                                                                          places=places)
+        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+
         insert = sqlexec(sql, records)
 
         if insert > 0:
@@ -186,10 +176,7 @@ def post_insert(database=None, table=None):
             base64_user = untoken.split(":", 1)[0]
             base64_pass = untoken.split(":", 1)[1]
 
-            sql = "INSERT INTO {database}.{table} ( {fields} )".format(database=database,
-                                                                       table=table,
-                                                                       fields=fields)
-            sql += "VALUES ( {places} )".format(places=places)
+            sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
 
             insert = sqlinsert(sql, records, base64_user, base64_pass)
 
@@ -222,19 +209,11 @@ def delete_one(database=None, table=None, key=None):
 
     column = request.args.get("column", 'id')
 
-    sql = "DELETE FROM {database}.{table} WHERE {column} = %s".format(database=database,
-                                                                      table=table,
-                                                                      column=column)
-    cnx = sql_connection()
-    cur = cnx.cursor(buffered=True)
-    cur.execute(sql, (key,))
+    sql = "DELETE FROM "+ database +"."+ table +" WHERE "+ column +"='"+ key +"'"
 
-    cnx.commit()
-    rowcount = cur.rowcount
-    cur.close()
-    cnx.close()
+    delete = sqlcommit(sql)
 
-    if rowcount > 0:
+    if delete > 0:
         return jsonify(status=211, message="Deleted", delete=True), 211
 
     return jsonify(status=466, message="Failed Delete", delete=False), 466
@@ -266,20 +245,11 @@ def patch_one(database=None, table=None, key=None):
         field = _key
         value = post[_key]
 
-    sql = "UPDATE {database}.{table} SET {field} = %s WHERE {column} = %s".format(database=database,
-                                                                                  table=table,
-                                                                                  field=field,
-                                                                                  column=column)
-    cnx = sql_connection()
-    cur = cnx.cursor(buffered=True)
-    cur.execute(sql, (value, key))
+    sql = "UPDATE "+ database +"."+ table +" SET "+ field +"='"+ value +"' WHERE "+ column +"='"+ key +"'"
 
-    cnx.commit()
-    rowcount = cur.rowcount
-    cur.close()
-    cnx.close()
+    update = sqlcommit(sql)
 
-    if rowcount > 0:
+    if update > 0:
         return jsonify(status=201, message="Created", update=True), 201
 
     return jsonify(status=465, message="Failed Update", update=False), 465
@@ -305,10 +275,7 @@ def put_replace(database=None, table=None):
     for key in post:
         records.append(post[key])
 
-    sql = "REPLACE INTO {database}.{table} ( {fields} )".format(database=database,
-                                                                table=table,
-                                                                fields=fields)
-    sql += "VALUES ( {places} )".format(places=places)
+    sql = "REPLACE INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
 
     replace = sqlexec(sql, records)
 
