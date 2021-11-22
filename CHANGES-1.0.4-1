@@ -17,6 +17,19 @@ pointless-string-statement (W0105) - String statement has no effect
 pep8 - expected 2 blank lines after class or function definition, found 1 (E305) 
 ungrouped-imports (C0412) - Imports from package flask are not grouped
 
+---  
+
 B608: Test for SQL injection - hardcoded_sql_expressions
+C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+
+pylint 2.11.1
+server.py:72:10: C0209: Formatting a regular string which could be a f-string (consider-using-f-string)
+```
+ 71     database = request.view_args['database']
+ 72     sql = 'SHOW TABLES FROM {database}'.format(database=database)
+ 73     rows = fetchall(sql)
+```
+
+
 
 

@@ -1,4 +1,6 @@
 
+#pip3 install pylint
+
 python3 -m pylint ../src/db_api_server/server.py
 
 python3 -m pylint ../src/db_api_server/__init__.py

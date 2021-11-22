@@ -4,6 +4,9 @@
 https://docs.gitlab.com/ee/user/project/badges.html  
 https://github.com/badges/shields  
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/69c153f001464d1bbe227d5e98f55925)](https://app.codacy.com/gh/karlrink/db-api?utm_source=github.com&utm_medium=referral&utm_content=karlrink/db-api&utm_campaign=Badge_Grade_Settings)
+
+
 [![PyPI Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/pypistats.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/pypistats/)
 [![PyPI Downloads](https://img.shields.io/pypi/dm/db-api-server.svg)](https://pypistats.org/packages/db-api-server)

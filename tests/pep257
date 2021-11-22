@@ -1,4 +1,6 @@
 
+#pip3 install pep257
+
 python3 -m pep257 ../src/db_api_server/server.py
 
 
