@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211122-2'
+__version__ = '1.0.4-0-20211122-3'
 
 import base64
 import decimal
@@ -24,26 +24,26 @@ import mysql.connector
 class AppJSONEncoder(flask.json.JSONEncoder):
     """app: json encoder."""
 
-    def default(self, obj):
+    def default(self, o):
         """default: self."""
-        if isinstance(obj, decimal.Decimal):
+        if isinstance(o, decimal.Decimal):
             # Convert decimal instance to string
-            return str(obj)
+            return str(o)
 
-        if isinstance(obj, bytes):
+        if isinstance(o, bytes):
             # Convert bytes instance to string, json
             try:
-                obj = obj.decode('utf-8')
+                o = o.decode('utf-8')
                 try:
-                    obj = json.loads(obj)
-                    return obj
+                    o = json.loads(o)
+                    return o
                 except json.decoder.JSONDecodeError:
-                    return str(obj)
+                    return str(o)
 
             except UnicodeDecodeError:
-                return str(obj)
+                return str(o)
 
-        return super().default(obj)
+        return super().default(o)
 
 
 APP = Flask(__name__)
