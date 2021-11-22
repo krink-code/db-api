@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211122-1'
+__version__ = '1.0.4-0-20211122-2'
 
 import base64
 import decimal
@@ -27,10 +27,11 @@ class AppJSONEncoder(flask.json.JSONEncoder):
     def default(self, obj):
         """default: self."""
         if isinstance(obj, decimal.Decimal):
-            # Convert decimal instance to string.
+            # Convert decimal instance to string
             return str(obj)
+
         if isinstance(obj, bytes):
-            # Convert bytes instance to string, json.
+            # Convert bytes instance to string, json
             try:
                 obj = obj.decode('utf-8')
                 try:
@@ -38,8 +39,10 @@ class AppJSONEncoder(flask.json.JSONEncoder):
                     return obj
                 except json.decoder.JSONDecodeError:
                     return str(obj)
+
             except UnicodeDecodeError:
                 return str(obj)
+
         return super().default(obj)
 
 
