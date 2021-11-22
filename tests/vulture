@@ -1,0 +1,6 @@
+
+#pip3 install vulture
+
+python3 -m vulture ../src/db_api_server/server.py
+
+

@@ -20,7 +20,5 @@ ungrouped-imports (C0412) - Imports from package flask are not grouped
 ---  
 
 B608: Test for SQL injection - hardcoded_sql_expressions
-
 W0237: Parameter 'o' has been renamed to 'obj' in overridden 'AppJSONEncoder.default' method (arguments-renamed)
-
 

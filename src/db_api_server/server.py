@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211122-3'
+__version__ = '1.0.4-0-20211122-4'
 
 import base64
 import decimal
@@ -316,17 +316,6 @@ def handle_exception(_e):
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(_e)
     return jsonify(res), 500
-
-
-def fetchall2(sql, stmt):
-    """sql: fetchall."""
-    cnx = sql_connection()
-    cur = cnx.cursor(buffered=True)
-    cur.execute(sql, stmt)
-    rows = cur.fetchall()
-    cur.close()
-    cnx.close()
-    return rows
 
 
 def fetchall(sql):
