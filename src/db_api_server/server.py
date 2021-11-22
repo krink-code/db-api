@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211121-1'
+__version__ = '1.0.4-0-20211121-2'
 
 import base64
 import decimal
@@ -289,7 +289,7 @@ def patch_one(database=None, table=None, key=None):
                                                                                   column=column)
     cnx = sql_connection()
     cur = cnx.cursor(buffered=True)
-    cur.execute(sql, (value,key))
+    cur.execute(sql, (value, key))
 
     cnx.commit()
     rowcount = cur.rowcount
