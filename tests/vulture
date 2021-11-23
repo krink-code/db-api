@@ -1,6 +1,8 @@
 
 #pip3 install vulture
 
+# python3 -m vulture ../src/db_api_server/server.py --min-confidence 100
+#
 python3 -m vulture ../src/db_api_server/server.py
 
 
