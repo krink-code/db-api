@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-0-20211122-4'
+__version__ = '1.0.4-1'
 
 import base64
 import decimal
@@ -63,7 +63,7 @@ def root():
 @APP.route("/api", methods=['GET'])
 def show_databases():
     """GET: /api Show Databases."""
-    sql = 'SHOW DATABASES'
+    sql = "SHOW DATABASES"
     rows = fetchall(sql)
     return jsonify(rows), 200
 
@@ -72,7 +72,7 @@ def show_databases():
 def show_tables(database=None):
     """GET: /api/<database> Show Database Tables."""
     database = request.view_args['database']
-    sql = 'SHOW TABLES FROM ' + database
+    sql = "SHOW TABLES FROM " + database
     rows = fetchall(sql)
     return jsonify(rows), 200
 
@@ -88,12 +88,12 @@ def get_many(database=None, table=None):
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        sql = 'SHOW FIELDS FROM ' + database +'.'+ table
+        sql = "SHOW FIELDS FROM " + database +"."+ table
     else:
-        sql = 'SELECT '+ fields +' FROM '+ database +'.'+ table
+        sql = "SELECT "+ fields +" FROM "+ database +"."+ table
 
     if limit:
-        sql += ' LIMIT ' + limit
+        sql += " LIMIT " + limit
 
     rows = fetchall(sql)
 
@@ -130,70 +130,10 @@ def post_insert(database=None, table=None):
     table = request.view_args['table']
 
     if request.is_json:
-
-        post = request.get_json()
-
-        placeholders = ['%s'] * len(post)
-
-        fields = ",".join([str(key) for key in post])
-        places = ",".join([str(key) for key in placeholders])
-
-        records = []
-        for key in post:
-            records.append(post[key])
-
-        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
-
-        insert = sqlexec(sql, records)
-
-        if insert > 0:
-            return jsonify(status=201, message="Created", insert=True), 201
-
-        return jsonify(status=461, message="Failed Create", insert=False), 461
+        return post_json(database, table)
 
     if request.form:
-
-        credentials = request.form.get('credentials', None)
-
-        if credentials:
-
-            columns = []
-            records = []
-            for key in request.form.keys():
-                if key == 'credentials':
-                    continue
-                columns.append(key)
-                records.append(request.form[key])
-
-            count = len(request.form) - 1
-            placeholders = ['%s'] * count
-
-            places = ",".join([str(key) for key in placeholders])
-
-            fields = ",".join([str(key) for key in columns])
-
-            base64_bytes = credentials.encode('ascii')
-            token_bytes = base64.b64decode(base64_bytes)
-            untoken = token_bytes.decode('ascii')
-
-            base64_user = untoken.split(":", 1)[0]
-            base64_pass = untoken.split(":", 1)[1]
-
-            sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
-
-            insert = sqlinsert(sql, records, base64_user, base64_pass)
-
-            if insert > 0:
-                return jsonify(status=201, message="Created", method="POST", insert=True), 201
-
-            return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
-
-        _return = {'status': 401,
-                   'message': 'Unauthorized',
-                   'details': 'No valid authentication credentials for the target resource',
-                   'method': 'POST',
-                   'insert': False}
-        return jsonify(_return), 401
+        return post_form(database, table)
 
     _return = {'status': 417,
                'message': 'Expectation Failed',
@@ -201,6 +141,78 @@ def post_insert(database=None, table=None):
                'method': 'POST',
                'insert': False}
     return jsonify(_return), 417
+
+
+def post_json(database, table):
+    """post: json data application/json."""
+    post = request.get_json()
+
+    placeholders = ['%s'] * len(post)
+
+    fields = ",".join([str(key) for key in post])
+    places = ",".join([str(key) for key in placeholders])
+
+    records = []
+    for key in post:
+        records.append(post[key])
+
+    sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+
+    insert = sqlexec(sql, records)
+
+    if insert > 0:
+        return jsonify(status=201, message="Created", insert=True), 201
+
+    return jsonify(status=461, message="Failed Create", insert=False), 461
+
+
+def post_form(database, table):
+    """post: form data application/x-www-form-urlencoded."""
+    credentials = request.form.get('credentials', None)
+
+    if credentials:
+
+        columns = []
+        records = []
+        for key in request.form.keys():
+            if key == 'credentials':
+                continue
+            columns.append(key)
+            records.append(request.form[key])
+
+        count = len(request.form) - 1
+        placeholders = ['%s'] * count
+
+        places = ",".join([str(key) for key in placeholders])
+
+        fields = ",".join([str(key) for key in columns])
+
+        base64_user, base64_pass = base64_untoken(credentials.encode('ascii'))
+
+        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+
+        insert = sqlinsert(sql, records, base64_user, base64_pass)
+
+        if insert > 0:
+            return jsonify(status=201, message="Created", method="POST", insert=True), 201
+
+        return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
+
+    _return = {'status': 401,
+               'message': 'Unauthorized',
+               'details': 'No valid authentication credentials for the target resource',
+               'method': 'POST',
+               'insert': False}
+    return jsonify(_return), 401
+
+
+def base64_untoken(base64_bytes):
+    """base64: untoken."""
+    token_bytes = base64.b64decode(base64_bytes)
+    untoken = token_bytes.decode('ascii')
+    base64_user = untoken.split(":", 1)[0]
+    base64_pass = untoken.split(":", 1)[1]
+    return base64_user, base64_pass
 
 
 @APP.route("/api/<database>/<table>/<key>", methods=['DELETE'])
@@ -248,7 +260,8 @@ def patch_one(database=None, table=None, key=None):
         field = _key
         value = post[_key]
 
-    sql = "UPDATE "+ database +"."+ table +" SET "+ field +"='"+ value +"' WHERE "+ column +"='"+ key +"'"
+    sql = "UPDATE "+ database +"."+ table
+    sql += " SET "+ field +"='"+ value +"' WHERE "+ column +"='"+ key +"'"
 
     update = sqlcommit(sql)
 
