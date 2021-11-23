@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-1'
+__version__ = '1.0.4-1-dev.1'
 
 import base64
 import decimal
@@ -161,7 +161,7 @@ def post_json(database, table):
     insert = sqlexec(sql, records)
 
     if insert > 0:
-        return jsonify(status=201, message="Created", insert=True), 201
+        return jsonify(status=201, message="Created", insert=True, rowid=insert), 201
 
     return jsonify(status=461, message="Failed Create", insert=False), 461
 
@@ -194,7 +194,7 @@ def post_form(database, table):
         insert = sqlinsert(sql, records, base64_user, base64_pass)
 
         if insert > 0:
-            return jsonify(status=201, message="Created", method="POST", insert=True), 201
+            return jsonify(status=201, message="Created", method="POST", insert=True, rowid=insert), 201
 
         return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
 
@@ -296,7 +296,7 @@ def put_replace(database=None, table=None):
     replace = sqlexec(sql, records)
 
     if replace > 0:
-        return jsonify(status=201, message="Created", replace=True), 201
+        return jsonify(status=201, message="Created", replace=True, rowid=replace), 201
 
     return jsonify(status=461, message="Failed Create", replace=False), 461
 
@@ -359,10 +359,10 @@ def sqlexec(sql, values):
     cur = cnx.cursor(buffered=True)
     cur.execute(sql, values)
     cnx.commit()
-    rowcount = cur.rowcount
+    lastrowid = cur.lastrowid
     cur.close()
     cnx.close()
-    return rowcount
+    return lastrowid
 
 
 def sqlcommit(sql):
@@ -383,10 +383,10 @@ def sqlinsert(sql, values, user, password):
     cur = cnx.cursor(buffered=True)
     cur.execute(sql, values)
     cnx.commit()
-    rowcount = cur.rowcount
+    lastrowid = cur.lastrowid
     cur.close()
     cnx.close()
-    return rowcount
+    return lastrowid
 
 
 def sql_connection(user=None, password=None):
