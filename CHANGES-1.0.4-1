@@ -22,3 +22,26 @@ ungrouped-imports (C0412) - Imports from package flask are not grouped
 B608: Test for SQL injection - hardcoded_sql_expressions
 W0237: Parameter 'o' has been renamed to 'obj' in overridden 'AppJSONEncoder.default' method (arguments-renamed)
 
+server.py:127:0: R0914: Too many local variables (19/15) (too-many-locals)
+126 @APP.route("/api/<database>/<table>", methods=['POST'])
+127 def post_insert(database=None, table=None):
+128     """POST: /api/<database>/<table> Create a new row. key1=val1,key2=val2."""
+
+C0301: Line too long (106/100) (line-too-long)
+
+168:0: R0914: Too many local variables (18/15) (too-many-locals)
+68 def post_form(database, table):
+
+---
+
+python3 -m pylint --version
+pylint 2.11.1
+astroid 2.8.6
+Python 3.8.6 (v3.8.6:db455296be, Sep 23 2020, 13:31:39) 
+[Clang 6.0 (clang-600.0.57)]
+
+python3 -m pylint ../src/db_api_server/server.py
+
+-------------------------------------------------------------------
+Your code has been rated at 10.00/10 (previous run: 9.96/10, +0.04)
+
