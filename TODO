@@ -1,0 +1,3 @@
+
+select * from db.table order by id desc limit 0,1000
+
