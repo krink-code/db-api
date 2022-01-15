@@ -22,6 +22,9 @@ PATCH  /api/<db>/<table>/:id         # Update row element by primary key
 DELETE /api/<db>/<table>/:id         # Delete a row by primary key
 
 GET    /api/<db>/<table>/count       # Count number of rows in a table
+
+POST   /api                          # Content-Type: text/sql
+
 ```   
 
 [![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)
@@ -68,7 +71,7 @@ python3 -m db_api_server
 import requests
 req = requests.get('http://127.0.0.1:8980/api',   
                auth=requests.auth.HTTPBasicAuth('username', 'password'))
-print(req.text)
+print(req.json())
 ```
 
 ---
@@ -87,39 +90,48 @@ fetch('http://127.0.0.1:8980/api', {
 ---   
 
 ### curl client examples   
+curl command line
 
 #### get service HTTP GET   
 ```   
 curl 127.0.0.1:8980/   
-```   
+```
+
 #### list all databases HTTP GET   
 ```  
 curl --user dbuser:dbpass http://127.0.0.1:8980/api   
-```   
+```
+
 #### list all tables in the mysql database HTTP GET   
 ```    
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql   
-```   
+```
+
 #### list all table fields in the user table HTTP GET   
 ```  
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user   
-```   
+```
+
 #### query the mysql.user table fields=user,host and limit 2,3 HTTP GET   
 ```  
 curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host&limit=2,3"   
-```   
+```
+
 #### query example database on different host and port (default is 127.0.0.1:3306) HTTP GET   
 ```  
 curl --user dbuser:dbpass -H "X-Host: 127.0.1.1" -H "X-Port: 3307" "http://127.0.0.1:8980/api/example/table?fields=field1,field2,field3"   
-```   
+``` 
+
 #### get record 3 from example database table1 HTTP GET   
 ```   
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/3   
-```   
+```
+
 #### get record 3 from example database table1 by name=47245ec8-a7d3-11eb-880f-acde48001122 with fields id,name HTTP GET   
 ```   
 curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name&fields=id,name"   
-```   
+```
+
 #### insert a new row into example database table1 HTTP POST   
 ```   
 curl --user dbuser:dbpass \
@@ -130,7 +142,6 @@ curl --user dbuser:dbpass \
 ```  
 
 base64(dbuser:dbpass)
-
 ```   
 curl -X POST \
      -H "Authorization: Basic <base64>" \
@@ -140,7 +151,6 @@ curl -X POST \
 ``` 
 
 form data requires credentials in base64 encoding
-
 ```
     <form action="http://127.0.0.1:8980/api/example/table1" method="POST">
       <input type="text" name="credentials" value="base64">
@@ -151,14 +161,15 @@ form data requires credentials in base64 encoding
 ```
 
 #### update a row element by primary key id=9 HTTP PATCH   
-```   
+```
 curl --user dbuser:dbpass \   
      -X PATCH  \   
      -H "Content-Type: application/json" \   
      -H "Accept: application/json"  \   
      -d '{"description": "A single colmn update"}' \   
     http://127.0.0.1:8980/api/example/table1/9    
-```   
+```
+
 #### update a row element specify name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP PATCH   
 ```   
 curl --user dbuser:dbpass \   
@@ -174,15 +185,17 @@ curl --user dbuser:dbpass \
 curl --user dbuser:dbpass \   
      -X DELETE  \   
     http://127.0.0.1:8980/api/example/table1/3   
-```   
+```
+
 #### delete a record specify primary key name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP DELETE   
-```   
+```  
 curl --user dbuser:dbpass \   
      -X DELETE  \   
     "http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name"   
-```   
+```
+
 #### replace records into example database table1  HTTP PUT   
-```   
+```  
 curl --user dbuser:dbpass \   
     --request PUT \   
     --header 'Content-Type: application/json' \   
@@ -190,7 +203,16 @@ curl --user dbuser:dbpass \
     http://127.0.0.1:8980/api/example/table1     
 ```   
 
----    
+#### run sql
+```
+curl --user dbuser:dbpass \
+     -X POST \
+     -H "Content-Type: text/sql" \
+     --data "select * from db.table where id = '1234'" \
+     "http://127.0.0.1:8980/api"
+```
+
+---  
 
 ```
 db-api-server  

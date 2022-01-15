@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.4-1-dev.1'
+__version__ = '1.0.pre5-dev.1'
 
 import base64
 import decimal
@@ -15,7 +15,7 @@ import flask.json
 from flask import Flask
 from flask import request
 from flask import jsonify
-from flask.logging import create_logger
+#from flask.logging import create_logger
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
@@ -48,11 +48,13 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 
 APP = Flask(__name__)
 CORS(APP, support_credentials=True)
-APP.logger = create_logger(APP)
+
+#APP.logger = create_logger(APP)
 APP.json_encoder = AppJSONEncoder
 APP.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
-APP.config['JSON_SORT_KEYS'] = True                 #default True
+APP.config['JSON_SORT_KEYS'] = False                #default True
 APP.config['JSONIFY_MIMETYPE'] = 'application/json' #default 'application/json'
+
 
 @APP.route("/", methods=['GET'])
 def root():
@@ -123,6 +125,40 @@ def get_one(database=None, table=None, key=None):
     return jsonify(status=404, message="Not Found"), 404
 
 
+@APP.route("/api", methods=['POST'])
+def post_api():
+    """POST: /api."""
+    if request.is_json:
+        return jsonify(post='json'), 200
+
+    if request.form:
+        return jsonify(post='form'), 200
+
+    if request.files:
+        return jsonify(post='files'), 200
+
+    if request.stream:
+
+        if request.content_type == 'image/jpg':
+            return jsonify(post='stream', content_type='image/jpg'), 200
+
+        if request.content_type == 'application/octet-stream':
+            return jsonify(post='stream', content_type='application/octet-stream'), 200
+
+        # are http headers case sensitive?
+        # header names are not case sensitive. From RFC 2616
+        # if str(request.content_type).lower() == 'text/plain; charset=utf-8':
+        if str(request.content_type).lower().startswith('text/plain'):
+            return jsonify(post='stream', content_type='text/plain'), 200
+
+        if str(request.content_type).lower().startswith('text/sql'):
+            return post_sql()
+        
+        return jsonify(post='stream'), 200
+
+    return jsonify(status=415, error='Unsupported Media Type', method='POST'), 415
+
+
 @APP.route("/api/<database>/<table>", methods=['POST'])
 def post_insert(database=None, table=None):
     """POST: /api/<database>/<table> Create a new row. key1=val1,key2=val2."""
@@ -141,78 +177,6 @@ def post_insert(database=None, table=None):
                'method': 'POST',
                'insert': False}
     return jsonify(_return), 417
-
-
-def post_json(database, table):
-    """post: json data application/json."""
-    post = request.get_json()
-
-    placeholders = ['%s'] * len(post)
-
-    fields = ",".join([str(key) for key in post])
-    places = ",".join([str(key) for key in placeholders])
-
-    records = []
-    for key in post:
-        records.append(post[key])
-
-    sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
-
-    insert = sqlexec(sql, records)
-
-    if insert > 0:
-        return jsonify(status=201, message="Created", insert=True, rowid=insert), 201
-
-    return jsonify(status=461, message="Failed Create", insert=False), 461
-
-
-def post_form(database, table):
-    """post: form data application/x-www-form-urlencoded."""
-    credentials = request.form.get('credentials', None)
-
-    if credentials:
-
-        columns = []
-        records = []
-        for key in request.form.keys():
-            if key == 'credentials':
-                continue
-            columns.append(key)
-            records.append(request.form[key])
-
-        count = len(request.form) - 1
-        placeholders = ['%s'] * count
-
-        places = ",".join([str(key) for key in placeholders])
-
-        fields = ",".join([str(key) for key in columns])
-
-        base64_user, base64_pass = base64_untoken(credentials.encode('ascii'))
-
-        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
-
-        insert = sqlinsert(sql, records, base64_user, base64_pass)
-
-        if insert > 0:
-            return jsonify(status=201, message="Created", method="POST", insert=True, rowid=insert), 201
-
-        return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
-
-    _return = {'status': 401,
-               'message': 'Unauthorized',
-               'details': 'No valid authentication credentials for the target resource',
-               'method': 'POST',
-               'insert': False}
-    return jsonify(_return), 401
-
-
-def base64_untoken(base64_bytes):
-    """base64: untoken."""
-    token_bytes = base64.b64decode(base64_bytes)
-    untoken = token_bytes.decode('ascii')
-    base64_user = untoken.split(":", 1)[0]
-    base64_pass = untoken.split(":", 1)[1]
-    return base64_user, base64_pass
 
 
 @APP.route("/api/<database>/<table>/<key>", methods=['DELETE'])
@@ -329,6 +293,101 @@ def handle_exception(_e):
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(_e)
     return jsonify(res), 500
+
+
+def post_sql():
+    """post: sql."""
+    post = request.data
+    sql = post.decode('utf-8')
+
+    cnx = sql_connection()
+    cur = cnx.cursor(buffered=True)
+
+    try:
+        for result in cur.execute(sql, multi=True):
+
+            if result.with_rows:
+                return jsonify(result.fetchall()), 200
+            else:
+                cnx.commit()
+                return jsonify(status=201, statment=result.statement, rowcount=result.rowcount, lastrowid=result.lastrowid), 201
+    finally:
+        cur.close()
+        cnx.close()
+
+    return jsonify(status=202, method='POST'), 202
+
+
+def post_json(database, table):
+    """post: json data application/json."""
+    post = request.get_json()
+
+    placeholders = ['%s'] * len(post)
+
+    fields = ",".join([str(key) for key in post])
+    places = ",".join([str(key) for key in placeholders])
+
+    records = []
+    for key in post:
+        records.append(post[key])
+
+    sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+
+    insert = sqlexec(sql, records)
+
+    if insert > 0:
+        return jsonify(status=201, message="Created", insert=True, rowid=insert), 201
+
+    return jsonify(status=461, message="Failed Create", insert=False), 461
+
+
+def post_form(database, table):
+    """post: form data application/x-www-form-urlencoded."""
+    credentials = request.form.get('credentials', None)
+
+    if credentials:
+
+        columns = []
+        records = []
+        for key in request.form.keys():
+            if key == 'credentials':
+                continue
+            columns.append(key)
+            records.append(request.form[key])
+
+        count = len(request.form) - 1
+        placeholders = ['%s'] * count
+
+        places = ",".join([str(key) for key in placeholders])
+
+        fields = ",".join([str(key) for key in columns])
+
+        base64_user, base64_pass = base64_untoken(credentials.encode('ascii'))
+
+        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+
+        insert = sqlinsert(sql, records, base64_user, base64_pass)
+
+        if insert > 0:
+            return jsonify(status=201, message="Created", method="POST", insert=True, rowid=insert), 201
+
+        return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
+
+    _return = {'status': 401,
+               'message': 'Unauthorized',
+               'details': 'No valid authentication credentials for the target resource',
+               'method': 'POST',
+               'insert': False}
+    return jsonify(_return), 401
+
+
+def base64_untoken(base64_bytes):
+    """base64: untoken."""
+    token_bytes = base64.b64decode(base64_bytes)
+    untoken = token_bytes.decode('ascii')
+    base64_user = untoken.split(":", 1)[0]
+    base64_pass = untoken.split(":", 1)[1]
+    return base64_user, base64_pass
 
 
 def fetchall(sql):
