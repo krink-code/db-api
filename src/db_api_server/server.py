@@ -331,12 +331,12 @@ def post_sql():
 
             if result.with_rows:
                 return jsonify(result.fetchall()), 200
-            else:
-                cnx.commit()
-                return jsonify(status=201,
-                               statment=result.statement,
-                               rowcount=result.rowcount,
-                               lastrowid=result.lastrowid), 201
+
+            cnx.commit()
+            return jsonify(status=201,
+                           statment=result.statement,
+                           rowcount=result.rowcount,
+                           lastrowid=result.lastrowid), 201
     finally:
         cur.close()
         cnx.close()
