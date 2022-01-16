@@ -16,6 +16,7 @@ post = requests.post(url,
                json={"name":"qa1","description":"posted via qa1"})
 
 print(post.text)
+print(post.json())
 print(post.ok)
 print(post.status_code)
 

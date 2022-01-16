@@ -1,8 +1,0 @@
-
-curl -X POST \
-     -H "Authorization: Basic ZGJ1c2VyOmRicGFzcw==" \
-     -H "Content-Type: application/json" \
-     --data '{"name":"hello","description":"inserted via post"}' \
-     "http://127.0.0.1:8980/api/example/table1"
-
-

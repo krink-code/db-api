@@ -1,0 +1,5 @@
+
+# pip3 install flake8
+
+python3 -m flake8 ../src/db_api_server/server.py
+

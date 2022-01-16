@@ -15,7 +15,7 @@ import flask.json
 from flask import Flask
 from flask import request
 from flask import jsonify
-#from flask.logging import create_logger
+# from flask.logging import create_logger
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
@@ -49,7 +49,7 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 APP = Flask(__name__)
 CORS(APP, support_credentials=True)
 
-#APP.logger = create_logger(APP)
+# APP.logger = create_logger(APP)
 APP.json_encoder = AppJSONEncoder
 APP.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
 APP.config['JSON_SORT_KEYS'] = False                #default True
@@ -82,7 +82,7 @@ def show_tables(database=None):
 @APP.route("/api/<database>/<table>", methods=['GET'])
 def get_many(database=None, table=None):
     """GET: /api/<database>/<table> Show Database Table fields."""
-    #?query=true List rows of table. fields=id,name&limit=2,5
+    # ?query=true List rows of table. fields=id,name&limit=2,5
     database = request.view_args['database']
     table = request.view_args['table']
 
@@ -107,7 +107,8 @@ def get_many(database=None, table=None):
 
 @APP.route("/api/<database>/<table>/<key>", methods=['GET'])
 def get_one(database=None, table=None, key=None):
-    """GET: /api/<database>/<table>:id Retrieve a row by primary key. id?fields= fields=&column=."""
+    """GET: /api/<database>/<table>:id."""
+    # Retrieve a row by primary key. id?fields= fields=&column=."""
     database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
@@ -115,7 +116,8 @@ def get_one(database=None, table=None, key=None):
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
 
-    sql = "SELECT "+ fields +" FROM "+ database +"."+ table +" WHERE "+ column +"='"+ key +"'"
+    sql = "SELECT "+ fields +" FROM "+ database +"."+ table
+    sql += " WHERE "+ column +"='"+ key +"'"
 
     row = fetchone(sql)
 
@@ -143,7 +145,8 @@ def post_api():
             return jsonify(post='stream', content_type='image/jpg'), 200
 
         if request.content_type == 'application/octet-stream':
-            return jsonify(post='stream', content_type='application/octet-stream'), 200
+            return jsonify(post='stream',
+                           content_type='application/octet-stream'), 200
 
         # are http headers case sensitive?
         # header names are not case sensitive. From RFC 2616
@@ -156,7 +159,9 @@ def post_api():
         
         return jsonify(post='stream'), 200
 
-    return jsonify(status=415, error='Unsupported Media Type', method='POST'), 415
+    return jsonify(status=415,
+                   error='Unsupported Media Type',
+                   method='POST'), 415
 
 
 @APP.route("/api/<database>/<table>", methods=['POST'])
@@ -173,7 +178,7 @@ def post_insert(database=None, table=None):
 
     _return = {'status': 417,
                'message': 'Expectation Failed',
-               'details': 'Server cannot meet Expectation: request-header field',
+               'details': 'Can Not Meet Expectation: request-header field',
                'method': 'POST',
                'insert': False}
     return jsonify(_return), 417
@@ -181,14 +186,16 @@ def post_insert(database=None, table=None):
 
 @APP.route("/api/<database>/<table>/<key>", methods=['DELETE'])
 def delete_one(database=None, table=None, key=None):
-    """DELETE: /api/<database>/<table>:id Delete a row by primary key id?column=."""
+    """DELETE: /api/<database>/<table>:id."""
+    # Delete a row by primary key id?column=."""
     database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
 
     column = request.args.get("column", 'id')
 
-    sql = "DELETE FROM "+ database +"."+ table +" WHERE "+ column +"='"+ key +"'"
+    sql = "DELETE FROM "+ database +"."+ table
+    sql += " WHERE "+ column +"='"+ key +"'"
 
     delete = sqlcommit(sql)
 
@@ -237,7 +244,8 @@ def patch_one(database=None, table=None, key=None):
 
 @APP.route("/api/<database>/<table>", methods=['PUT'])
 def put_replace(database=None, table=None):
-    """PUT: /api/<database>/<table> Replace existing row with new row. key1=val1,key2=val2."""
+    """PUT: /api/<database>/<table>."""
+    # Replace existing row with new row. key1=val1,key2=val2."""
     database = request.view_args['database']
     table = request.view_args['table']
 
@@ -255,12 +263,16 @@ def put_replace(database=None, table=None):
     for key in post:
         records.append(post[key])
 
-    sql = "REPLACE INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+    sql = "REPLACE INTO " + database +"."+ table
+    sql += " ("+ fields +") VALUES ("+ places +")"
 
     replace = sqlexec(sql, records)
 
     if replace > 0:
-        return jsonify(status=201, message="Created", replace=True, rowid=replace), 201
+        return jsonify(status=201,
+                       message="Created",
+                       replace=True,
+                       rowid=replace), 201
 
     return jsonify(status=461, message="Failed Create", replace=False), 461
 
@@ -276,19 +288,29 @@ def not_found(_e=None):
 def handle_exception(_e):
     """Exception: HTTP Exception."""
     if isinstance(_e, HTTPException):
-        return jsonify(status=_e.code, errorType="HTTP Exception", errorMessage=str(_e)), _e.code
+        return jsonify(status=_e.code,
+                       errorType="HTTP Exception",
+                       errorMessage=str(_e)), _e.code
 
     if type(_e).__name__ == 'OperationalError':
-        return jsonify(status=512, errorType="OperationalError", errorMessage=str(_e)), 512
+        return jsonify(status=512,
+                       errorType="OperationalError",
+                       errorMessage=str(_e)), 512
 
     if type(_e).__name__ == 'InterfaceError':
-        return jsonify(status=512, errorType="InterfaceError", errorMessage=str(_e)), 512
+        return jsonify(status=512,
+                       errorType="InterfaceError",
+                       errorMessage=str(_e)), 512
 
     if type(_e).__name__ == 'ProgrammingError':
-        return jsonify(status=512, errorType="ProgrammingError", errorMessage=str(_e)), 512
+        return jsonify(status=512,
+                       errorType="ProgrammingError",
+                       errorMessage=str(_e)), 512
 
     if type(_e).__name__ == 'AttributeError':
-        return jsonify(status=512, errorType="AttributeError", errorMessage=str(_e)), 512
+        return jsonify(status=512,
+                       errorType="AttributeError",
+                       errorMessage=str(_e)), 512
 
     res = {'status': 500, 'errorType': 'Internal Server Error'}
     res['errorMessage'] = str(_e)
@@ -310,7 +332,10 @@ def post_sql():
                 return jsonify(result.fetchall()), 200
             else:
                 cnx.commit()
-                return jsonify(status=201, statment=result.statement, rowcount=result.rowcount, lastrowid=result.lastrowid), 201
+                return jsonify(status=201,
+                               statment=result.statement,
+                               rowcount=result.rowcount,
+                               lastrowid=result.lastrowid), 201
     finally:
         cur.close()
         cnx.close()
@@ -331,12 +356,16 @@ def post_json(database, table):
     for key in post:
         records.append(post[key])
 
-    sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+    sql = "INSERT INTO " + database +"."+ table
+    sql += " ("+ fields +") VALUES ("+ places +")"
 
     insert = sqlexec(sql, records)
 
     if insert > 0:
-        return jsonify(status=201, message="Created", insert=True, rowid=insert), 201
+        return jsonify(status=201,
+                       message="Created",
+                       insert=True,
+                       rowid=insert), 201
 
     return jsonify(status=461, message="Failed Create", insert=False), 461
 
@@ -364,14 +393,22 @@ def post_form(database, table):
 
         base64_user, base64_pass = base64_untoken(credentials.encode('ascii'))
 
-        sql = "INSERT INTO " + database +"."+ table +" ("+ fields +") VALUES ("+ places +")"
+        sql = "INSERT INTO " + database +"."+ table
+        sql += " ("+ fields +") VALUES ("+ places +")"
 
         insert = sqlinsert(sql, records, base64_user, base64_pass)
 
         if insert > 0:
-            return jsonify(status=201, message="Created", method="POST", insert=True, rowid=insert), 201
+            return jsonify(status=201,
+                           message="Created",
+                           method="POST",
+                           insert=True,
+                           rowid=insert), 201
 
-        return jsonify(status=461, message="Failed Create", method="POST", insert=False), 461
+        return jsonify(status=461,
+                       message="Failed Create",
+                       method="POST",
+                       insert=False), 461
 
     _return = {'status': 401,
                'message': 'Unauthorized',

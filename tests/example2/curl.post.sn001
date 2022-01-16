@@ -1,9 +1,0 @@
-
-curl --user dbuser:dbpass \
-     -X POST \
-     -H "Content-Type: application/json" \
-     --data '{"sn":"sn001"}' \
-     "http://127.0.0.1:8980/api/asset/inventory"
-
-
-

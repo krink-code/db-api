@@ -1,0 +1,7 @@
+
+# pip3 install pyflakes
+
+python3 -m pyflakes ../src/db_api_server/__init__.py
+python3 -m pyflakes ../src/db_api_server/__main__.py
+python3 -m pyflakes ../src/db_api_server/server.py
+
