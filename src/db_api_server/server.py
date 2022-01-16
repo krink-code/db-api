@@ -43,6 +43,11 @@ class AppJSONEncoder(flask.json.JSONEncoder):
             except UnicodeDecodeError:
                 return str(o)
 
+        if isinstance(o, bytearray):
+            # Convert bytearray instance to string
+            o = o.decode('utf-8')
+            return str(o)
+
         return super().default(o)
 
 
