@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.pre5-dev.1'
+__version__ = '1.0.pre5-20220115'
 
 import base64
 import decimal
@@ -20,6 +20,7 @@ from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
 import mysql.connector
+
 
 class AppJSONEncoder(flask.json.JSONEncoder):
     """app: json encoder."""
@@ -51,9 +52,9 @@ CORS(APP, support_credentials=True)
 
 # APP.logger = create_logger(APP)
 APP.json_encoder = AppJSONEncoder
-APP.config['JSONIFY_PRETTYPRINT_REGULAR'] = True    #default False
-APP.config['JSON_SORT_KEYS'] = False                #default True
-APP.config['JSONIFY_MIMETYPE'] = 'application/json' #default 'application/json'
+APP.config['JSONIFY_PRETTYPRINT_REGULAR'] = True     # default False
+APP.config['JSON_SORT_KEYS'] = False                 # default True
+APP.config['JSONIFY_MIMETYPE'] = 'application/json'  # default 'application/json'
 
 
 @APP.route("/", methods=['GET'])
@@ -90,9 +91,9 @@ def get_many(database=None, table=None):
     limit = request.args.get("limit", None)
 
     if not request.query_string:
-        sql = "SHOW FIELDS FROM " + database +"."+ table
+        sql = "SHOW FIELDS FROM " + database + "." + table
     else:
-        sql = "SELECT "+ fields +" FROM "+ database +"."+ table
+        sql = "SELECT " + fields + " FROM " + database + "." + table
 
     if limit:
         sql += " LIMIT " + limit
@@ -116,8 +117,8 @@ def get_one(database=None, table=None, key=None):
     fields = request.args.get("fields", '*')
     column = request.args.get("column", 'id')
 
-    sql = "SELECT "+ fields +" FROM "+ database +"."+ table
-    sql += " WHERE "+ column +"='"+ key +"'"
+    sql = "SELECT " + fields + " FROM " + database + "." + table
+    sql += " WHERE " + column + "='" + key + "'"
 
     row = fetchone(sql)
 
@@ -156,7 +157,7 @@ def post_api():
 
         if str(request.content_type).lower().startswith('text/sql'):
             return post_sql()
-        
+
         return jsonify(post='stream'), 200
 
     return jsonify(status=415,
@@ -194,8 +195,8 @@ def delete_one(database=None, table=None, key=None):
 
     column = request.args.get("column", 'id')
 
-    sql = "DELETE FROM "+ database +"."+ table
-    sql += " WHERE "+ column +"='"+ key +"'"
+    sql = "DELETE FROM " + database + "." + table
+    sql += " WHERE " + column + "='" + key + "'"
 
     delete = sqlcommit(sql)
 
@@ -231,8 +232,8 @@ def patch_one(database=None, table=None, key=None):
         field = _key
         value = post[_key]
 
-    sql = "UPDATE "+ database +"."+ table
-    sql += " SET "+ field +"='"+ value +"' WHERE "+ column +"='"+ key +"'"
+    sql = "UPDATE " + database + "." + table
+    sql += " SET " + field + "='" + value + "' WHERE " + column + "='" + key + "'"
 
     update = sqlcommit(sql)
 
@@ -263,8 +264,8 @@ def put_replace(database=None, table=None):
     for key in post:
         records.append(post[key])
 
-    sql = "REPLACE INTO " + database +"."+ table
-    sql += " ("+ fields +") VALUES ("+ places +")"
+    sql = "REPLACE INTO " + database + "." + table
+    sql += " (" + fields + ") VALUES (" + places + ")"
 
     replace = sqlexec(sql, records)
 
@@ -356,8 +357,8 @@ def post_json(database, table):
     for key in post:
         records.append(post[key])
 
-    sql = "INSERT INTO " + database +"."+ table
-    sql += " ("+ fields +") VALUES ("+ places +")"
+    sql = "INSERT INTO " + database + "." + table
+    sql += " (" + fields + ") VALUES (" + places + ")"
 
     insert = sqlexec(sql, records)
 
@@ -393,8 +394,8 @@ def post_form(database, table):
 
         base64_user, base64_pass = base64_untoken(credentials.encode('ascii'))
 
-        sql = "INSERT INTO " + database +"."+ table
-        sql += " ("+ fields +") VALUES ("+ places +")"
+        sql = "INSERT INTO " + database + "." + table
+        sql += " (" + fields + ") VALUES (" + places + ")"
 
         insert = sqlinsert(sql, records, base64_user, base64_pass)
 
@@ -412,7 +413,7 @@ def post_form(database, table):
 
     _return = {'status': 401,
                'message': 'Unauthorized',
-               'details': 'No valid authentication credentials for the target resource',
+               'details': 'No valid authentication credentials for target resource',
                'method': 'POST',
                'insert': False}
     return jsonify(_return), 401
@@ -505,7 +506,7 @@ def sql_connection(user=None, password=None):
         'use_pure':               request.headers.get('X-Pure', True),
         'use_unicode':            request.headers.get('X-Unicode', True),
         'charset':                request.headers.get('X-Charset', 'utf8'),
-        'connection_timeout': int(request.headers.get('X-Connection-Timeout', 60)),
+        'connection_timeout': int(request.headers.get('X-Connection-Timeout', 10)),
     }
     _db = mysql.connector.connect(**config)
     return _db
