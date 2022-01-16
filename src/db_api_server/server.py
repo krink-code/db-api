@@ -107,7 +107,7 @@ def get_many(database=None, table=None):
 @APP.route("/api/<database>/<table>/<key>", methods=['GET'])
 def get_one(database=None, table=None, key=None):
     """GET: /api/<database>/<table>:id."""
-    # Retrieve a row by primary key. id?fields= fields=&column=."""
+    # Retrieve a row by primary key. id?fields= fields=&column=
     database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
@@ -148,9 +148,6 @@ def post_api():
                            post='stream',
                            content_type='application/octet-stream'), 415
 
-        # are http headers case sensitive?
-        # header names are not case sensitive. From RFC 2616
-        # if str(request.content_type).lower() == 'text/plain; charset=utf-8':
         if str(request.content_type).lower().startswith('text/plain'):
             return jsonify(status=415, post='stream', content_type='text/plain'), 415
 
@@ -166,7 +163,8 @@ def post_api():
 
 @APP.route("/api/<database>/<table>", methods=['POST'])
 def post_insert(database=None, table=None):
-    """POST: /api/<database>/<table> Create a new row. key1=val1,key2=val2."""
+    """POST: /api/<database>/<table>."""
+    # Create a new row. key1=val1,key2=val2.
     database = request.view_args['database']
     table = request.view_args['table']
 
@@ -187,7 +185,7 @@ def post_insert(database=None, table=None):
 @APP.route("/api/<database>/<table>/<key>", methods=['DELETE'])
 def delete_one(database=None, table=None, key=None):
     """DELETE: /api/<database>/<table>:id."""
-    # Delete a row by primary key id?column=."""
+    # Delete a row by primary key id?column=
     database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
@@ -207,8 +205,8 @@ def delete_one(database=None, table=None, key=None):
 
 @APP.route("/api/<database>/<table>/<key>", methods=['PATCH'])
 def patch_one(database=None, table=None, key=None):
-    """PATCH: /api/<database>/<table>:id Update row element by primary key."""
-    # (single key/val) id?column=
+    """PATCH: /api/<database>/<table>:id."""
+    # Update row element by primary key (single key/val) id?column=
     database = request.view_args['database']
     table = request.view_args['table']
     key = request.view_args['key']
@@ -410,12 +408,11 @@ def post_form(database, table):
                        method="POST",
                        insert=False), 461
 
-    _return = {'status': 401,
-               'message': 'Unauthorized',
-               'details': 'No valid authentication credentials for target resource',
-               'method': 'POST',
-               'insert': False}
-    return jsonify(_return), 401
+    return jsonify(status=401,
+                   message='Unauthorized',
+                   details='No valid authentication credentials for target resource',
+                   method='POST',
+                   insert=False), 401
 
 
 def base64_untoken(base64_bytes):
