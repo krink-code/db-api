@@ -15,7 +15,6 @@ import flask.json
 from flask import Flask
 from flask import request
 from flask import jsonify
-# from flask.logging import create_logger
 from werkzeug.exceptions import HTTPException
 from flask_cors import CORS
 
@@ -50,7 +49,6 @@ class AppJSONEncoder(flask.json.JSONEncoder):
 APP = Flask(__name__)
 CORS(APP, support_credentials=True)
 
-# APP.logger = create_logger(APP)
 APP.json_encoder = AppJSONEncoder
 APP.config['JSONIFY_PRETTYPRINT_REGULAR'] = True     # default False
 APP.config['JSON_SORT_KEYS'] = False                 # default True
@@ -132,33 +130,34 @@ def get_one(database=None, table=None, key=None):
 def post_api():
     """POST: /api."""
     if request.is_json:
-        return jsonify(post='json'), 200
+        return jsonify(status=415, post='json'), 415
 
     if request.form:
-        return jsonify(post='form'), 200
+        return jsonify(status=415, post='form'), 415
 
     if request.files:
-        return jsonify(post='files'), 200
+        return jsonify(status=415, post='files'), 415
 
     if request.stream:
 
         if request.content_type == 'image/jpg':
-            return jsonify(post='stream', content_type='image/jpg'), 200
+            return jsonify(status=415, post='stream', content_type='image/jpg'), 415
 
         if request.content_type == 'application/octet-stream':
-            return jsonify(post='stream',
-                           content_type='application/octet-stream'), 200
+            return jsonify(status=415,
+                           post='stream',
+                           content_type='application/octet-stream'), 415
 
         # are http headers case sensitive?
         # header names are not case sensitive. From RFC 2616
         # if str(request.content_type).lower() == 'text/plain; charset=utf-8':
         if str(request.content_type).lower().startswith('text/plain'):
-            return jsonify(post='stream', content_type='text/plain'), 200
+            return jsonify(status=415, post='stream', content_type='text/plain'), 415
 
         if str(request.content_type).lower().startswith('text/sql'):
             return post_sql()
 
-        return jsonify(post='stream'), 200
+        return jsonify(status=415, post='stream'), 415
 
     return jsonify(status=415,
                    error='Unsupported Media Type',
