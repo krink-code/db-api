@@ -11,7 +11,7 @@ setup(
     entry_points = {
         "console_scripts": ['db-api-server = db_api_server.server:main']
         },
-    version = '1.0.4',
+    version = '1.0.5',
     description = "db-api-server flask mysql.connector",
     long_description = "RESTful API for mysql/mariadb",
     author = "Karl Rink",
