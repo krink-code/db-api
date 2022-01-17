@@ -12,7 +12,7 @@ RUN pip install gunicorn
 ADD wsgi.py /app
 ADD src/db_api_server/server.py /app/src/db_api_server/server.py
 
-CMD gunicorn --bind 0.0.0.0:8980 -w 3 --log-level=info wsgi:app
+CMD gunicorn --bind 0.0.0.0:8980 -w 3 --log-level=info wsgi:APP
 
 EXPOSE 8980
 
