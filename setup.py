@@ -11,11 +11,11 @@ setup(
     entry_points = {
         "console_scripts": ['db-api-server = db_api_server.server:main']
         },
-    version = '1.0.5',
+    version = '1.0.6',
     description = "db-api-server flask mysql.connector",
     long_description = "RESTful API for mysql/mariadb",
-    author = "Karl Rink",
-    author_email = "karl@rink.us",
+    author = "K",
+    author_email = "k@rink.us",
     url = "https://gitlab.com/krink/db-api-server",
     install_requires = [ 'flask', 'flask-cors', 'mysql.connector' ]
     )

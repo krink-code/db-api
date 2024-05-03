@@ -5,7 +5,7 @@
 
 from __future__ import absolute_import
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 
 import base64
 import decimal
@@ -21,7 +21,7 @@ from flask_cors import CORS
 import mysql.connector
 
 
-class AppJSONEncoder(flask.json.JSONEncoder):
+class AppJSONEncoder(json.JSONEncoder):
     """app: json encoder."""
 
     def default(self, o):
