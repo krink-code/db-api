@@ -195,7 +195,7 @@ curl --user dbuser:dbpass \
     http://127.0.0.1:8980/api/example/table1     
 ```   
 
-#### run sql requires Content-Type txt/sql (HTTP POST)
+#### run sql requires request header Content-Type txt/sql (HTTP POST)
 ```
 curl --user dbuser:dbpass \
      -X POST \
@@ -203,6 +203,11 @@ curl --user dbuser:dbpass \
      --data "select * from db.table where id = '1234'" \
      "http://127.0.0.1:8980/api"
 ```  
+
+#### set new database host and port using request headers (HTTP GET)
+```
+curl --user dbuser:dbpass -H "X-Host: new-db-host" -H "X-Port: 3306" -H "X-Db: mydatabase" http://127.0.0.1:8980/api
+```
 
 ## Python example
 ### python client using request module   
