@@ -26,24 +26,39 @@ GET    /api/<db>/<table>/count       # Count number of rows in a table
 POST   /api                          # Content-Type: text/sql
 
 ```   
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)  
 
-[![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)  
+## GoLang
+[![Go Version](https://img.shields.io/badge/go-1.21-blue.svg)](https://golang.org/dl/)
+
+### Development HTTP service (run from source)    
+```
+go get -u github.com/gin-gonic/gin
+go get -u github.com/go-sql-driver/mysql
+go run server.go
+```
+
+### Build command line
+```
+go build -o db-api server.go
+```
+
+
+## Python
+
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![Python 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
- 
+[![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)  
 
----   
  
 ### Development HTTP service (run from source)    
 ```   
 python3 src/db_api_server/server.py   
 ```   
 
----   
-
 ### pip install  
+ [![Package Version](https://img.shields.io/pypi/v/db-api-server.svg)](https://pypi.python.org/pypi/db-api-server/)  
 ```
 pip install db-api-server
 ```
@@ -64,18 +79,140 @@ $ db-api-server
 python3 -m db_api_server
 ```
 
----   
+# Clients
+Any http client works
 
+### curl client (curl command line)
+
+#### get service (HTTP GET)   
+```   
+curl 127.0.0.1:8980/   
+```
+
+#### list all databases (HTTP GET)   
+```  
+curl --user dbuser:dbpass http://127.0.0.1:8980/api   
+```
+
+#### list all tables in the mysql database (HTTP GET)   
+```    
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql   
+```
+
+#### list all table fields in the user table (HTTP GET)   
+```  
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user   
+```
+
+#### query the mysql.user table fields=user,host and limit 2,3 (HTTP GET)   
+```  
+curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host&limit=2,3"   
+```
+
+#### query example database on different host and port (default is 127.0.0.1:3306) (HTTP GET)   
+```  
+curl --user dbuser:dbpass -H "X-Host: 127.0.1.1" -H "X-Port: 3307" "http://127.0.0.1:8980/api/example/table?fields=field1,field2,field3"   
+``` 
+
+#### get record 3 from example database table1 (HTTP GET)   
+```   
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/3   
+```
+
+#### get record 3 from example database table1 by name=47245ec8-a7d3-11eb-880f-acde48001122 with fields id,name (HTTP GET)   
+```   
+curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name&fields=id,name"   
+```
+
+#### insert a new row into example database table1 (HTTP POST)   
+```   
+curl --user dbuser:dbpass \
+     -X POST \
+     -H "Content-Type: application/json" \   
+     --data '{"name":"hello","description":"inserted via curl"}' \   
+     "http://127.0.0.1:8980/api/example/table1"   
+```  
+
+#### Authorization Basic Auth in base64(dbuser:dbpass) (HTTP POST)
+```   
+curl -X POST \
+     -H "Authorization: Basic <base64>" \
+     -H "Content-Type: application/json" \
+     --data '{"name":"hello","description":"inserted via post"}' \
+     "http://127.0.0.1:8980/api/example/table1"
+``` 
+
+#### form data requires credentials in base64 encoding (HTTP POST)
+```
+    <form action="http://127.0.0.1:8980/api/example/table1" method="POST">
+      <input type="text" name="credentials" value="base64">
+      <input type="text" name="name" value="name">
+      <input type="text" name="description" value="form data">
+      <input type="submit">
+    </form>
+```
+
+#### update a row element by primary key id=9 (HTTP PATCH)   
+```
+curl --user dbuser:dbpass \   
+     -X PATCH  \   
+     -H "Content-Type: application/json" \   
+     -H "Accept: application/json"  \   
+     -d '{"description": "A single colmn update"}' \   
+    http://127.0.0.1:8980/api/example/table1/9    
+```
+
+#### update a row element specify name=47245ec8-a7d3-11eb-880f-acde48001122 (HTTP PATCH)   
+```   
+curl --user dbuser:dbpass \   
+     -X PATCH  \   
+     -H "Content-Type: application/json" \   
+     -H "Accept: application/json"  \   
+     -d '{"description": "A single colmn update2"}' \   
+    "http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name"   
+```
+
+#### delete record id=3 (HTTP DELETE)   
+```   
+curl --user dbuser:dbpass \   
+     -X DELETE  \   
+    http://127.0.0.1:8980/api/example/table1/3   
+```
+
+#### delete a record specify primary key name=47245ec8-a7d3-11eb-880f-acde48001122 (HTTP DELETE)   
+```  
+curl --user dbuser:dbpass \   
+     -X DELETE  \   
+    "http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name"   
+```
+
+#### replace records into example database table1 (HTTP PUT)   
+```  
+curl --user dbuser:dbpass \   
+    --request PUT \   
+    --header 'Content-Type: application/json' \   
+    --data '{"id":7, "name":"hello", "description":"replaced via curl"}' \   
+    http://127.0.0.1:8980/api/example/table1     
+```   
+
+#### run sql requires Content-Type txt/sql (HTTP POST)
+```
+curl --user dbuser:dbpass \
+     -X POST \
+     -H "Content-Type: text/sql" \
+     --data "select * from db.table where id = '1234'" \
+     "http://127.0.0.1:8980/api"
+```  
+
+## Python example
 ### python client using request module   
 ```
 import requests
-req = requests.get('http://127.0.0.1:8980/api',   
-                    auth=requests.auth.HTTPBasicAuth('username', 'password'))
+req = requests.get('http://127.0.0.1:8980/api', auth=requests.auth.HTTPBasicAuth('username', 'password'))
 print(req.json())
 ```
 
----
-
+## Javascript example
 ### javascript client using fetch
 ```
 fetch('http://127.0.0.1:8980/api', {
@@ -87,160 +224,32 @@ fetch('http://127.0.0.1:8980/api', {
     .catch(err => document.write('Request Failed', err));
 ```
 
----   
-
-### curl client examples   
-curl command line
-
-#### get service HTTP GET   
-```   
-curl 127.0.0.1:8980/   
-```
-
-#### list all databases HTTP GET   
-```  
-curl --user dbuser:dbpass http://127.0.0.1:8980/api   
-```
-
-#### list all tables in the mysql database HTTP GET   
-```    
-curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql   
-```
-
-#### list all table fields in the user table HTTP GET   
-```  
-curl --user dbuser:dbpass http://127.0.0.1:8980/api/mysql/user   
-```
-
-#### query the mysql.user table fields=user,host and limit 2,3 HTTP GET   
-```  
-curl --user dbuser:dbpass "http://127.0.0.1:8980/api/mysql/user?fields=user,host&limit=2,3"   
-```
-
-#### query example database on different host and port (default is 127.0.0.1:3306) HTTP GET   
-```  
-curl --user dbuser:dbpass -H "X-Host: 127.0.1.1" -H "X-Port: 3307" "http://127.0.0.1:8980/api/example/table?fields=field1,field2,field3"   
-``` 
-
-#### get record 3 from example database table1 HTTP GET   
-```   
-curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/3   
-```
-
-#### get record 3 from example database table1 by name=47245ec8-a7d3-11eb-880f-acde48001122 with fields id,name HTTP GET   
-```   
-curl --user dbuser:dbpass http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name&fields=id,name"   
-```
-
-#### insert a new row into example database table1 HTTP POST   
-```   
-curl --user dbuser:dbpass \
-     -X POST \
-     -H "Content-Type: application/json" \   
-     --data '{"name":"hello","description":"inserted via curl"}' \   
-     "http://127.0.0.1:8980/api/example/table1"   
-```  
-
-base64(dbuser:dbpass)
-```   
-curl -X POST \
-     -H "Authorization: Basic <base64>" \
-     -H "Content-Type: application/json" \
-     --data '{"name":"hello","description":"inserted via post"}' \
-     "http://127.0.0.1:8980/api/example/table1"
-``` 
-
-form data requires credentials in base64 encoding
-```
-    <form action="http://127.0.0.1:8980/api/example/table1" method="POST">
-      <input type="text" name="credentials" value="base64">
-      <input type="text" name="name" value="name">
-      <input type="text" name="description" value="form data">
-      <input type="submit">
-    </form>
-```
-
-#### update a row element by primary key id=9 HTTP PATCH   
-```
-curl --user dbuser:dbpass \   
-     -X PATCH  \   
-     -H "Content-Type: application/json" \   
-     -H "Accept: application/json"  \   
-     -d '{"description": "A single colmn update"}' \   
-    http://127.0.0.1:8980/api/example/table1/9    
-```
-
-#### update a row element specify name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP PATCH   
-```   
-curl --user dbuser:dbpass \   
-     -X PATCH  \   
-     -H "Content-Type: application/json" \   
-     -H "Accept: application/json"  \   
-     -d '{"description": "A single colmn update2"}' \   
-    "http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name"   
-```
-
-#### delete record id=3 HTTP DELETE   
-```   
-curl --user dbuser:dbpass \   
-     -X DELETE  \   
-    http://127.0.0.1:8980/api/example/table1/3   
-```
-
-#### delete a record specify primary key name=47245ec8-a7d3-11eb-880f-acde48001122 HTTP DELETE   
-```  
-curl --user dbuser:dbpass \   
-     -X DELETE  \   
-    "http://127.0.0.1:8980/api/example/table1/47245ec8-a7d3-11eb-880f-acde48001122?column=name"   
-```
-
-#### replace records into example database table1  HTTP PUT   
-```  
-curl --user dbuser:dbpass \   
-    --request PUT \   
-    --header 'Content-Type: application/json' \   
-    --data '{"id":7, "name":"hello", "description":"replaced via curl"}' \   
-    http://127.0.0.1:8980/api/example/table1     
-```   
-
-#### run sql
-```
-curl --user dbuser:dbpass \
-     -X POST \
-     -H "Content-Type: text/sql" \
-     --data "select * from db.table where id = '1234'" \
-     "http://127.0.0.1:8980/api"
-```
-
----  
-
+# Deployments
+### Python
+https://pypi.org/project/db-api-server    
 ```
 db-api-server  
 ``` 
-https://pypi.org/project/db-api-server    
 
-
-### docker    
+### Docker    
 ```
 docker pull dcsops/db-api  
 ```
 https://hub.docker.com/r/dcsops/db-api  
 
 
-### Production deployments   
+### Python production deployments  
+Flask  
 https://flask.palletsprojects.com/en/2.0.x/tutorial/deploy/  
-
+Gunicorn  
 https://gunicorn.org/#deployment   
 
----   
-
-### RESTful   
+# Resources
+### RESTful
 https://en.wikipedia.org/wiki/Representational_state_transfer   
 
-### Basic auth   
-https://en.wikipedia.org/wiki/Basic_access_authentication
+### Basic auth
+https://en.wikipedia.org/wiki/Basic_access_authentication  
 
-### Base64   
+### Base64
 https://en.wikipedia.org/wiki/Base64    
-
-
