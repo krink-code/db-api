@@ -211,9 +211,19 @@ curl --user dbuser:dbpass \
      "http://127.0.0.1:8980/api"
 ```  
 
-#### set new database host and port using request headers (HTTP GET)
+#### set request headers (HTTP GET)
 ```
-curl --user dbuser:dbpass -H "X-Host: new-db-host" -H "X-Port: 3306" -H "X-Db: mydatabase" http://127.0.0.1:8980/api
+curl --user dbuser:dbpass \
+     -H "X-Host: new-db-host" \
+     -H "X-Port: 3307" \
+     -H "X-Db: mydatabase" \
+     -H "X-Get-Warnings: true" \
+     -H "X-Auth-Plugin: mysql_native_password" \
+     -H "X-Pure: true" \
+     -H "X-Unicode: true" \
+     -H "X-Charset: utf8" \
+     -H "X-Connection-Timeout: 10" \
+     http://127.0.0.1:8980/api
 ```
 
 ## Python example
