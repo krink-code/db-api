@@ -43,6 +43,13 @@ go run server.go
 go build -o db-api server.go
 ```
 
+### Run on a different port
+```
+go run server.go -port=8080
+```
+```
+PORT=8080 go run server.go
+```
 
 ## Python
 

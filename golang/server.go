@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +37,20 @@ type SQLResponse struct {
 }
 
 func main() {
+	// Define a command-line flag for the port
+	portFlag := flag.String("port", "", "port to run the server on")
+	flag.Parse()
+
+	// Get the port from the environment variable, if not set use the flag
+	port := os.Getenv("PORT")
+	if port == "" {
+		if *portFlag != "" {
+			port = *portFlag
+		} else {
+			port = "8980"
+		}
+	}
+
 	router := gin.Default()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -56,7 +72,8 @@ func main() {
 
 	router.NoRoute(notFound)
 
-	router.Run(":8980")
+	// Use the specified port
+	router.Run(fmt.Sprintf(":%s", port))
 }
 
 func extractHeaders() gin.HandlerFunc {
